@@ -674,6 +674,7 @@
         "eu": "Identifikadorea"
       },
       "preset": "uri_text",
+      "validators": "unique_identifier",
       "form_placeholder": {
         "en": "Ej: http://organismo.es/catalogo/dataset",
         "es": "Ej: http://organismo.es/catalogo/dataset",
@@ -2123,6 +2124,10 @@
           "value": "application/ld+json"
         },
         {
+          "label": "JSON-P",
+          "value": "application/javascript"
+        },
+        {
           "label": "KML",
           "value": "application/vnd.google-earth.kml+xml"
         },
@@ -2173,6 +2178,10 @@
         {
           "label": "ODT",
           "value": "application/vnd.oasis.opendocument.text"
+        },
+        {
+          "label": "Parquet",
+          "value": "application/vnd.apache.parquet"
         },
         {
           "label": "PC-Axis",

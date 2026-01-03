@@ -27,7 +27,7 @@
                       ['div-'+ 'field-' + field.field_name], [], '', FALSE
                      )
                   %}
-                    <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+                    <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
                     <input id="{{ 'field-' + field.field_name +  '-time-from-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-from-' ~ vars.indice }}" value="{{ time }}" class="input-small" placeholder="hh:mm" />
 
                     {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -41,7 +41,7 @@
                       ['div-'+ 'field-' + field.field_name], [], '', FALSE
                      )
                   %}
-                    <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date_to }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+                    <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date_to }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
                     <input id="{{ 'field-' + field.field_name +  '-time-to-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-to-' ~ vars.indice }}" value="{{ time_to }}" class="input-small" placeholder="hh:mm" />
 
                     {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -87,7 +87,7 @@
                    ['div-'+ 'field-' + field.field_name], [], '', FALSE
                   )
                %}
-                 <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date_from }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+                 <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date_from }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
                  <input id="{{ 'field-' + field.field_name +  '-time-from-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-from-' ~ vars.indice }}" value="{{ time_from }}" class="input-small" placeholder="hh:mm" />
 
                  {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -101,7 +101,7 @@
                    ['div-'+ 'field-' + field.field_name], [], '', FALSE
                   )
                %}
-                 <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date_to }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+                 <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date_to }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
                  <input id="{{ 'field-' + field.field_name +  '-time-to-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-to-' ~ vars.indice }}" value="{{ time_to }}" class="input-small" placeholder="hh:mm" />
 
                  {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -116,12 +116,12 @@
       <div class="div-date">
          {% call form.input_block(
              'field-' + field.field_name +  '-date-from-' ~ vars.indice,
-             h.scheming_language_text(field.label) + ' ' ~ vars.indice + '. ' + _('From'),
+             h.scheming_language_text(field.label) + ' ' ~ vars.indice + '. ' + '<br>'|safe  + _('From'),
              errors[field.field_name],
              ['div-'+ 'field-' + field.field_name], [], '', FALSE
             )
          %}
-            <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+            <input id="{{ 'field-' + field.field_name +  '-date-from-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-from-' ~ vars.indice }}" value="{{ date }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
             <input id="{{ 'field-' + field.field_name +  '-time-from-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-from-' ~ vars.indice }}" value="{{ time }}" class="input-small" placeholder="hh:mm" />
 
             {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -135,7 +135,7 @@
                ['div-'+ 'field-' + field.field_name], [], '', FALSE
             )
          %}
-            <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+            <input id="{{ 'field-' + field.field_name +  '-date-to-' ~ vars.indice }}" type="date" name="{{ field.field_name +  '-date-to-' ~ vars.indice }}" value="{{ date }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
             <input id="{{ 'field-' + field.field_name +  '-time-to-' ~ vars.indice }}" type="time" name="{{ field.field_name +  '-time-to-' ~ vars.indice }}" value="{{ time }}" class="input-small" placeholder="hh:mm" />
 
             {#%- snippet 'scheming/form_snippets/help_text.html', field=field -%#}
@@ -146,7 +146,7 @@
    <div id="multi-value-{{field.field_name}}-link" class="multi-add-field control-group">
       {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
       <div class="controls">
-         <button class="btn btn-mini btn-add-multiple-field" type="button" onclick="addNewField_{{field.field_name}}();">{% trans %}Add new{% endtrans %} {{h.scheming_language_text(field.label)}}</button>
+         <button class="btn btn-secondary btn-add-multiple-field" type="button" onclick="addNewField_{{field.field_name}}();">{% trans %}Add new{% endtrans %} {{h.scheming_language_text(field.label)}}</button>
       </div>
    </div>
 
@@ -164,7 +164,8 @@
                 var pre_string_input = string_input.substring(0, index)
                 var post_input = string_input.substring(index)
                 label.empty();
-                label.append(string_input.substring(0, pre_string_input.lastIndexOf(" ")+1) + num_input + post_input);
+        
+                label.append(string_input.substring(0, pre_string_input.lastIndexOf(" ")+1) + num_input +"." + "<br>" + post_input.replace(".", ""));
                 new_div.find("input").each(function(){
                    $(this).attr('id', $(this).attr('id').substring(0, $(this).attr('id').lastIndexOf("-")+1) + num_input);
                    $(this).attr('name', $(this).attr('name').substring(0, $(this).attr('name').lastIndexOf("-")+1) + num_input);

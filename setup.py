@@ -1,6 +1,6 @@
-# Copyright (C) 2022 Entidad Pública Empresarial Red.es
+# Copyright (C) 2025 Entidad Pública Empresarial Red.es
 #
-# This file is part of "dge_scheming (datos.gob.es)".
+# This file is part of "dge-scheming (datos.gob.es)".
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,7 +9,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -32,7 +32,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.0.1',
+    version='1.0.0',
 
     description='''NTI dataset''',
     long_description=long_description,
@@ -41,8 +41,8 @@ setup(
     url='',
 
     # Author details
-    author='''GMV''',
-    author_email='''sgi@gmv.com''',
+    author='''''',
+    author_email='''''',
 
     # Choose your license
     license='AGPL',
@@ -60,8 +60,7 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.9',
     ],
 
 
@@ -98,7 +97,8 @@ setup(
     entry_points='''
         [ckan.plugins]
         dge_scheming=ckanext.dge_scheming.plugin:DgeSchemingPlugin
-	[babel.extractors]
+	
+    [babel.extractors]
 	ckan = ckan.lib.extract:extract_ckan
     ''',
 

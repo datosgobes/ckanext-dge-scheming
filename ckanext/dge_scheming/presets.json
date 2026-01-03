@@ -35,12 +35,23 @@
       "values": {
         "form_snippet": "multilanguage_tags.html",
         "display_snippet": "multilanguage_tags.html",
-        "validators": "fluent_tags",
+        "validators": "multilanguage_tags",
         "output_validators": "fluent_tags_output",
         "form_attrs": {
           "data-module": "autocomplete",
-          "data-module-tags": ""
+          "data-module-tags": "",
+          "data-module-source": "/api/2/util/tag/autocomplete?incomplete=?",
+          "class": ""
         }
+      }
+    },
+    {
+      "preset_name": "multiple_checkbox_language",
+      "values": {
+        "form_snippet": "multiple_checkbox_language.html",
+        "display_snippet": "multiple_choice_language.html",
+        "validators": "multiple_uri_text",
+        "output_validators": "multiple_uri_text_output"
       }
     },
     {
@@ -59,6 +70,41 @@
         "display_snippet": "date_period.html",
         "validators": "date_period",
         "output_validators": "date_period_output"
+      }
+    },
+    {
+      "preset_name": "multiple_theme_select",
+      "values": {
+        "form_snippet": "multiple_select_theme.html",
+        "display_snippet": "multiple_choice_theme.html",
+        "validators": "multiple_theme_choice",
+        "output_validators": "scheming_multiple_choice_output"
+      }
+    },
+    {
+      "preset_name": "allow_empty_datetime",
+      "values": {
+        "form_snippet": "datetime.html",
+        "display_snippet": "datetime.html",
+        "validators": "allow_empty_scheming_isodatetime convert_to_json_if_datetime"
+      }
+    },
+    {
+      "preset_name": "multiple_select_spatial",
+      "values": {
+        "form_snippet": "multiple_select_spatial.html",
+        "display_snippet": "multiple_choice_spatial.html",
+        "validators": "multiple_select_spatial",
+        "output_validators": "scheming_multiple_choice_output"
+      }
+    },
+    {
+      "preset_name": "ignore_empty_multiple_text",
+      "values": {
+        "form_snippet": "uri_text.html",
+        "display_snippet": "dge_multiple_text.html",
+        "validators": "dge_scheming_multiple_text",
+        "output_validators": "scheming_load_json"
       }
     }
   ]

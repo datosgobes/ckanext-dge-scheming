@@ -16,9 +16,9 @@
       classes=['control-medium', 'div-date-frequency-value', 'div-'+field.field_name+'-value'],
       attrs=field.form_attrs if 'form_attrs' in field else {},
       is_required=h.scheming_field_required(field)
-      ) %}
+      ) %} {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
    {% endcall %}
-   {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
+  
 
    {#
      Creating select field for frequency type

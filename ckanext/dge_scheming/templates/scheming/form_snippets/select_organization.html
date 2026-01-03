@@ -13,16 +13,19 @@
 {% set organizations_create = h.organizations_available('create_dataset') %}
 {% set existing_org = data[field.field_name] or data.group_id %}
 
-{% call form.input_block('field-organizations',
+{% macro _publishers() %}
+  {% set existing_org = data[field.field_name] or data.group_id %}
+  {% call form.input_block('field-publisher',
     label=h.scheming_language_text(field.label),
     error=errors[field.field_name],
     is_required=h.scheming_field_required(field),
+    classes=['control-medium'],
     extra_html=caller() if caller,
-    ) %}
+    )%}
     <div {{
       form.attributes(field.form_attrs) if 'form_attrs' in field else '' }}>
-    <select id="'field-{{field.field_name}}" name="{{field.field_name}}" {{ form.attributes(
-        field.get('form_select_attrs', {'data-module':'autocomplete'})) }}>
+    <select id="field-{{field.field_name}}" name="{{field.field_name}}" {{ form.attributes(
+      field.get('form_select_attrs', {'data-module':'autocomplete'})) }}>
       {% if not h.scheming_field_required(field) %}
         <option value="">{% if not org_required
           %}{{ _('No organization') }}{% endif %}</option>
@@ -33,5 +36,9 @@
       {% endfor %}
     </select>
     </div>
-    {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
+  {% endcall %}
+{% endmacro %}
+
+{% call _publishers() %}
+  {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
 {% endcall %}

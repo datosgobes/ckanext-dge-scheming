@@ -1,1 +1,2 @@
 rfc3987
+beautifulsoup4==4.9.1

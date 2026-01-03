@@ -35,7 +35,7 @@
           ['div-'+ 'field-' + field.field_name], [], '', is_required=h.scheming_field_required(field)
          )
       %}
-        <input id="{{ 'field-' + field.field_name +  '-date' }}" type="date" name="{{ field.field_name + '_date' }}" value="{{ date }}" class="input-medium dataset-private" placeholder="AAAA/MM/DD" />
+        <input id="{{ 'field-' + field.field_name +  '-date' }}" type="date" name="{{ field.field_name + '_date' }}" value="{{ date }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
         <input id="{{ 'field-' + field.field_name + '-time' }}" type="time" name="{{ field.field_name + '_time' }}" value="{{ time }}" class="input-small" placeholder="hh:mm" />
 
         {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}

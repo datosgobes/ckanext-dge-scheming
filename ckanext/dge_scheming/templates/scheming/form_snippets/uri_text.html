@@ -5,11 +5,11 @@
     id='field-' + field.field_name,
     label=h.scheming_language_text(field.label),
     placeholder=h.scheming_language_text(field.form_placeholder),
-    value=data[field.field_name],
+    value=h.dge_get_value_from_nti_identifier(data[field.field_name]) if field.field_name == 'identifier' else data[field.field_name],
     error=errors[field.field_name],
     classes=['control-medium'],
     attrs=field.form_attrs if 'form_attrs' in field else {},
-    is_required=h.scheming_field_required(field)
+    is_required=h.dge_scheming_field_nti_required(field) if field.field_name == 'license_id' else h.scheming_field_required(field)
     )
 %}
     {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}

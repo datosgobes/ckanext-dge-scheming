@@ -29,8 +29,9 @@
           <option value="{{ option[0] }}" {% if option[0] == data.private|trim %}selected="selected"{% endif %}>{{ option[1] }}</option>
           {% endfor %}
         </select>
+        {%- snippet 'scheming/form_snippets/dge_help_text.html', field=field %}
       </div>
-      {%- snippet 'scheming/form_snippets/dge_help_text.html', field=field %}
+      
     </div>
   {% endblock %}
 

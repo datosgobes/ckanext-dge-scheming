@@ -691,6 +691,7 @@
         "eu": "Identifikadorea"
       },
       "preset": "uri_text",
+      "validators": "unique_identifier",
       "form_placeholder": {
         "en": "Ej: http://organismo.es/catalogo/dataset",
         "es": "Ej: http://organismo.es/catalogo/dataset",
@@ -2190,6 +2191,10 @@
         {
           "label": "ODT",
           "value": "application/vnd.oasis.opendocument.text"
+        },
+        {
+          "label": "Parquet",
+          "value": "application/vnd.apache.parquet"
         },
         {
           "label": "PC-Axis",

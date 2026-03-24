@@ -1089,11 +1089,11 @@ dataset_fields:
 
 - field_name: hvd_applicable_legislation
   label: 
-    en: "Applicable HVD legislation"
-    es: "Legislaci\u00F3n HVD aplicable"
-    ca: "Legislaci\u00F3 HVD aplicable"
-    gl: "Lexislaci\u00F3n HVD aplicable"
-    eu: "Aplikatu beharreko HVD legeria"
+    en: "Applicable legislation"
+    es: "Legislaci\u00F3n aplicable"
+    ca: "Legislaci\u00F3 aplicable"
+    gl: "Lexislaci\u00F3n aplicable"
+    eu: "Aplikatu beharreko legeria"
   preset: multiple_uri_text
   #required_one: true
   hidden: true
@@ -1925,11 +1925,11 @@ resource_fields:
 
 - field_name: resource_hvd_applicable_legislation
   label: 
-    en: "Applicable HVD legislation"
-    es: "Legislaci\u00F3n HVD aplicable"
-    ca: "Legislaci\u00F3 HVD aplicable"
-    gl: "Lexislaci\u00F3n HVD aplicable"
-    eu: "Aplikatu beharreko HVD legeria"
+    en: "Applicable legislation"
+    es: "Legislaci\u00F3n aplicable"
+    ca: "Legislaci\u00F3 aplicable"
+    gl: "Lexislaci\u00F3n aplicable"
+    eu: "Aplikatu beharreko legeria"
   preset: multiple_uri_text
   #required_one: true
   hidden: true

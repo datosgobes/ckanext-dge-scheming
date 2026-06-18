@@ -1,0 +1,116 @@
+{# templates/scheming/form_snippets/dge_help_popover.html #}
+{#
+  Renderiza el popover de ayuda de un campo scheming.
+
+  Parámetros esperados:
+  - field: definición del campo scheming.
+  - lang: idioma del subcampo, opcional. Si no se pasa, usa el idioma de UI.
+  - extra_help_url: URL adicional opcional, pensada para enlaces internos
+    generados dinámicamente desde la plantilla que llama al snippet.
+  - extra_help_label: texto del enlace adicional. Opcional; si no se pasa,
+    usa la etiqueta por defecto.
+
+  Resolución de contenido:
+  - Texto: prioriza field.help_popover_text y usa field.help_text como fallback.
+  - URL principal: prioriza field.help_popover_url y usa field.help_url como fallback.
+  - Los campos de texto y URL pueden venir como string o mapping por idioma.
+
+  Notas:
+  - extra_help_url no sustituye a help_popover_url; añade un segundo enlace.
+  - El enlace adicional se pinta antes del enlace principal del campo.
+#}
+
+
+{# lang opcional (para multilenguaje). Si no se pasa, usa h.lang() #}
+{%- set _ui_lang = h.lang() -%}
+{%- set _field_lang = lang if lang is defined and lang else _ui_lang -%}
+
+{# Texto de ayuda:
+   - mapping simple: ui_lang -> texto
+   - mapping anidado: field_lang -> {ui_lang -> texto}
+   Prioriza help_popover_text y usa help_text como fallback. #}
+{%- set help_text = '' -%}
+{%- if field.help_popover_text is mapping -%}
+  {%- if field.help_popover_text.get(_field_lang) is mapping -%}
+    {%- set help_text = h.scheming_language_text(field.help_popover_text.get(_field_lang), _ui_lang) -%}
+  {%- else -%}
+    {%- set help_text = h.scheming_language_text(field.help_popover_text, _ui_lang) -%}
+  {%- endif -%}
+{%- elif field.help_popover_text -%}
+  {%- set help_text = field.help_popover_text -%}
+{%- elif field.help_text is mapping -%}
+  {%- if field.help_text.get(_field_lang) is mapping -%}
+    {%- set help_text = h.scheming_language_text(field.help_text.get(_field_lang), _ui_lang) -%}
+  {%- else -%}
+    {%- set help_text = h.scheming_language_text(field.help_text, _ui_lang) -%}
+  {%- endif -%}
+{%- elif field.help_text -%}
+  {%- set help_text = field.help_text -%}
+{%- endif -%}
+
+{# URL del enlace: help_popover_url (mapping o string). Si no, help_url. #}
+{%- set help_url = '' -%}
+{%- if field.help_popover_url is mapping -%}
+  {%- set help_url = field.help_popover_url.get(_ui_lang, field.help_popover_url.get('es', '')) -%}
+{%- elif field.help_popover_url -%}
+  {%- set help_url = field.help_popover_url -%}
+{%- elif field.help_url is mapping -%}
+  {%- set help_url = field.help_url.get(_ui_lang, field.help_url.get('es', '')) -%}
+{%- elif field.help_url -%}
+  {%- set help_url = field.help_url -%}
+{%- endif -%}
+
+{# Texto del enlace (configurable) #}
+{%- set link_label = _('View more') -%}
+{%- if field.help_link_label is mapping -%}
+  {%- set link_label = h.scheming_language_text(field.help_link_label, _ui_lang) -%}
+{%- elif field.get('help_link_label') -%}
+  {%- set link_label = field.get('help_link_label') -%}
+{%- endif -%}
+
+{%- set extra_help_url = extra_help_url if extra_help_url is defined and extra_help_url else '' -%}
+{%- set extra_help_label = extra_help_label if extra_help_label is defined and extra_help_label else _('View more') -%}
+
+{# Si no hay texto, no pintamos nada #}
+{%- if help_text -%}
+  {# id único por campo+lang para aria-controls #}
+  {%- set pop_id = 'help-popover-' + field.field_name + '-' + _field_lang -%}
+
+  <span class="dge-help">
+    <button type="button"
+            class="dge-help-trigger"
+            aria-expanded="false"
+            aria-controls="{{ pop_id }}"
+            title="">
+      ?
+    </button>
+
+    <div id="{{ pop_id }}" class="dge-help-popover" role="dialog" aria-hidden="true">
+      <div class="dge-help-popover__inner">
+        <div class="dge-help-popover__text">
+          {{ help_text }}
+        </div>
+
+        {%- if extra_help_url or help_url -%}
+            <div class="dge-help-popover__link">
+              {%- if extra_help_url -%}
+                <div>
+                  <a href="{{ extra_help_url }}" target="_blank" rel="noopener">
+                    {{ extra_help_label }}
+                  </a>
+                </div>
+              {%- endif -%}
+
+              {%- if help_url -%}
+                <div>
+                  <a href="{{ help_url }}" target="_blank" rel="noopener">
+                    {{ link_label }}
+                  </a>
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+      </div>
+    </div>
+  </span>
+{%- endif -%}

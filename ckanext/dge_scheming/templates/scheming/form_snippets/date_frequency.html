@@ -2,75 +2,40 @@
 
 <div class="date-frequency date-frequency-{{field.field_name}}" id="date-frequency-{{field.field_name}}">
 
-   {#
-     Creating field for value input
-   #}
-   {% call form.input(
-      field.field_name + '-value',
-      id='field-' + field.field_name + '-value',
-      label= h.scheming_language_text(field.get('label_value', 'Fequency')),
-      placeholder=h.scheming_language_text(field.form_placeholder),
-      value=data[field.field_name + '-value']
-          or data.get(field.field_name, {})['value'],
-      error=errors[field.field_name],
-      classes=['control-medium', 'div-date-frequency-value', 'div-'+field.field_name+'-value'],
-      attrs=field.form_attrs if 'form_attrs' in field else {},
-      is_required=h.scheming_field_required(field)
-      ) %} {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
-   {% endcall %}
-  
+   {% snippet 'scheming/form_snippets/help_text.html', field=field %}
 
-   {#
-     Creating select field for frequency type
-   #}
-   {%- set options=[
-     {
-       "value": "",
-       "text": ""
-     },
-     {
-       "value": "seconds",
-       "text": _('Seconds')
-     },
-     {
-       "value": "minutes",
-       "text": _('Minutes')
-     },
-     {
-       "value": "hours",
-       "text": _('Hours')
-     },
-     {
-       "value": "days",
-       "text": _('Days')
-     },
-     {
-       "value": "weeks",
-       "text": _('Weeks')
-     },
-     {
-       "value": "months",
-       "text": _('Months')
-     },
-     {
-       "value": "years",
-       "text": _('Years')
-     }
-   ] -%}
+
+   <label for="field-{{ field.field_name }}" class="label-container control-label">
+      {{ h.scheming_language_text(field.label) }}
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field-%}
+   </label>
+   
+   {%- set frequency_choices = h.dge_get_nti_field_choices('frequency') -%}
+   {%- set placeholder = {'value': '', 'text': _('Select...')} -%}
+   {%- set ns = namespace(options=[]) -%}
+
+   {%- for choice in frequency_choices -%}
+      {%- set ns.options = ns.options + [{
+         'value': choice.value,
+         'text': h.scheming_language_text(choice.label)
+      }] -%}
+   {%- endfor -%}
+
+   {%- set sorted_options = [placeholder] + (ns.options | sort(attribute='text')) -%}
 
    {% call form.select(
-      field.field_name + '-type',
-      id='field-' + field.field_name + '-type',
-      label= h.scheming_language_text(field.label),
-      options=options,
-      selected=data[field.field_name + '-type']
-          or data.get(field.field_name, {})['type'],
+      field.field_name + '-identifier',
+      id='field-' + field.field_name + '-identifier',
+      label=' ',
+      options=sorted_options,
+      selected=data[field.field_name + '-identifier']
+          or data.get(field.field_name, {})['identifier']
+          or '',
       error=errors[field.field_name],
-      classes=['control-medium', 'div-date-frequency-type', 'div-'+field.field_name+'-value'],
+      classes=['control-medium', 'div-date-frequency-identifier', 'div-'+field.field_name+'-source'],
       attrs=field.form_attrs if 'form_attrs' in field else {},
       is_required=h.scheming_field_required(field)
       ) %}
    {% endcall %}
 
-   
 </div>

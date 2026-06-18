@@ -1,0 +1,53 @@
+{% import 'macros/form.html' as form %}
+
+{# organization_option_tag puede venir desde el snippet que lo llama #}
+{% if organization_option_tag is not defined %}
+  {% macro organization_option_tag(organization, selected_org) %}
+    <option value="{{ organization.id }}"{% if selected_org %} selected="selected"{% endif %}>
+      {{ organization.display_name }}
+    </option>
+  {% endmacro %}
+{% endif %}
+
+{% if organizations_available is not defined or not organizations_available %}
+  {% set organizations_available = h.organizations_available('create_dataset') %}
+{% endif %}
+
+{% set existing_org = data[field.field_name] or data.group_id %}
+{% set org_required = org_required if org_required is defined else h.scheming_field_required(field) %}
+{% set field_error = errors[field.field_name] if errors and errors[field.field_name] is defined else none %}
+
+<div class="control-group {% if field_error %}error{% endif %}">
+
+  <label class="control-label" for="field-{{ field.field_name }}">
+    {{ h.scheming_language_text(field.label) }}
+    <span class="control-required">{% if org_required %}*{% endif %}</span>
+    {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+  </label>
+
+  <div class="controls">
+    <div {{ form.attributes(field.form_attrs) if 'form_attrs' in field else '' }}>
+      <select id="field-{{ field.field_name }}"
+              name="{{ field.field_name }}"
+              {{ form.attributes(field.get('form_select_attrs', {'data-module':'autocomplete'})) }}>
+
+        {% if not org_required %}
+          <option value="">{{ _('No organization') }}</option>
+        {% endif %}
+
+        {% for organization in organizations_available %}
+          {% set selected_org = (existing_org and existing_org == organization.id) %}
+          {{ organization_option_tag(organization, selected_org) }}
+        {% endfor %}
+
+      </select>
+    </div>
+
+    {% if field_error %}
+      <span class="help-inline">{{ field_error }}</span>
+    {% endif %}
+
+    {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+  </div>
+
+</div>

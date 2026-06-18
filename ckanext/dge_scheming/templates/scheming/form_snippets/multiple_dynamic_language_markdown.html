@@ -1,0 +1,415 @@
+{% import 'macros/form.html' as form %}
+
+{%- set langs = h.fluent_form_languages(field, entity_type, object_type, schema) -%}
+{%- set req_lang = field.get('required_language', 'es') -%}
+
+{%- set lang_names = {
+  'es': 'Español',
+  'en': 'Inglés',
+  'ca': 'Catalán',
+  'gl': 'Gallego',
+  'eu': 'Euskera'
+} -%}
+
+{%- set base_label = (field.label.es if field.label is mapping and field.label.es is defined else 'Descripción') -%}
+
+{# Valores actuales por idioma (POST o dataset) #}
+{%- set current = {} -%}
+{%- for l in langs -%}
+  {%- set v = data.get(field.field_name + '-' + l) -%}
+  {%- if not v and data.get(field.field_name) and data.get(field.field_name).get(l) -%}
+    {%- set v = data.get(field.field_name).get(l) -%}
+  {%- endif -%}
+  {%- if v -%}
+    {%- set _ = current.update({l: v}) -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<div class="fluent-translated-field fluent-markdown-field"
+     data-required-lang="{{ req_lang }}">
+
+  {# ======================================
+     1) Idioma obligatorio (Español)
+     ====================================== #}
+    <div class="fluent-header-2col">
+
+    <div class="fluent-header-left">
+        <div class="control-group fluent-vertical {% if errors.get(field.field_name + '-' + req_lang) %}error{% endif %}">
+        <label class="control-label" for="field-{{ field.field_name }}-{{ req_lang }}">
+            {{ base_label }} ({{ lang_names.get(req_lang, req_lang) }}) *
+        </label>
+
+        {% call form.markdown(
+            field.field_name + '-' + req_lang,
+            id='field-' + field.field_name + '-' + req_lang,
+            label='',
+            placeholder=h.scheming_language_text(field.fluent_form_placeholder[req_lang], req_lang),
+            value=data.get(field.field_name + '-' + req_lang)
+                or (data.get(field.field_name, {}).get(req_lang) if data.get(field.field_name) else ''),
+            error=errors.get(field.field_name + '-' + req_lang),
+            attrs=field.form_attrs or {},
+            is_required=true
+        ) %}
+            {%- snippet 'scheming/form_snippets/fluent_help_text.html',
+            field=field,
+            lang=req_lang -%}
+        {% endcall %}
+        </div>
+    </div>
+
+    <div class="fluent-header-right">
+        <button type="button" class="btn btn-link fluent-show-add-btn">
+        + {{ _('Add translation') }}
+        </button>
+    </div>
+
+    </div>
+
+
+
+  {# ======================================
+     2) Traducciones ya añadidas (filas fijas)
+     ====================================== #}
+
+  <div class="fluent-translations-list">
+    {%- for l in langs -%}
+      {%- if l != req_lang and current.get(l) -%}
+        <div class="fluent-translation-item" data-lang="{{ l }}">
+
+          <div class="control-group fluent-vertical">
+            <label class="control-label" for="field-{{ field.field_name }}-{{ l }}">
+              {{ base_label }} ({{ lang_names.get(l, l) }})
+            </label>
+
+            {% call form.markdown(
+              field.field_name + '-' + l,
+              id='field-' + field.field_name + '-' + l,
+              label='',
+              placeholder=h.scheming_language_text(field.fluent_form_placeholder[l], l),
+              value=current.get(l),
+              error=errors.get(field.field_name + '-' + l),
+              attrs=field.form_attrs or {},
+              is_required=false
+            ) %}
+              {%- snippet 'scheming/form_snippets/fluent_help_text.html',
+                field=field,
+                lang=l -%}
+            {% endcall %}
+          </div>
+
+          <div style="margin-top: 8px;">
+            <button type="button"
+                    class="btn btn-danger w-100 fluent-remove-translation"
+                    style="max-width: 220px;">
+              Eliminar traducción
+            </button>
+          </div>
+
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  {# ======================================
+     3) Fila nueva traducción — OCULTA al cargar
+     (markdown + idioma + botón en una línea)
+     ====================================== #}
+
+  <div class="fluent-add-translation is-hidden">
+    <div class="fluent-add-row">
+
+      <div class="fluent-col-name">
+        <label class="fluent-new-label" for="fluent-new-{{ field.field_name }}"></label>
+        {# OJO: aquí usamos textarea para markdown; CKAN lo convertirá a editor #}
+        <textarea id="fluent-new-{{ field.field_name }}"
+                  class="form-control control-medium fluent-new-value"
+                  rows="6"></textarea>
+      </div>
+
+      <div class="fluent-col-lang">
+        <label for="fluent-lang-select-{{ field.field_name }}">{{ _('Translation language') }} *</label>
+        <select id="fluent-lang-select-{{ field.field_name }}"
+                class="form-control fluent-lang-select">
+          {%- for l in langs -%}
+            {%- if l != req_lang and not current.get(l) -%}
+              <option value="{{ l }}">{{ lang_names.get(l, l) }}</option>
+            {%- endif -%}
+          {%- endfor -%}
+        </select>
+      </div>
+
+      <div class="fluent-col-btn">
+        <button type="button" class="btn btn-primary fluent-add-btn">
+          + {{ _('Add translation') }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  {# ======================================
+     Template para crear nuevas traducciones “fijas”
+     ====================================== #}
+  <script type="text/template" class="fluent-translation-template">
+    <div class="fluent-translation-item" data-lang="__LANG__">
+
+      <div class="control-group fluent-vertical">
+        <label class="control-label" for="field-{{ field.field_name }}-__LANG__">
+          {{ base_label }} (__LANGNAME__)
+        </label>
+
+        <textarea id="field-{{ field.field_name }}-__LANG__"
+                  name="{{ field.field_name }}-__LANG__"
+                  class="form-control control-medium"
+                  placeholder="__PLACEHOLDER__"
+                  rows="6">__VALUE__</textarea>
+
+        {# Help text markdown por idioma #}
+        <div class="help-block">
+          {{ h.scheming_language_text(field.fluent_help_text[req_lang], req_lang) if field.fluent_help_text is mapping and field.fluent_help_text.get(req_lang) else '' }}
+        </div>
+      </div>
+
+      <div style="margin-top: 8px;">
+        <button type="button"
+                class="btn btn-danger w-100 fluent-remove-translation"
+                style="max-width: 220px;">
+          Eliminar traducción
+        </button>
+      </div>
+
+    </div>
+  </script>
+
+  {# ======================================
+     JS: mostrar fila + label dinámico + no repetir idiomas
+     + re-inicializar markdown cuando añadimos un textarea nuevo
+     ====================================== #}
+  <script>
+  (function () {
+    var root = document.currentScript.closest('.fluent-markdown-field');
+    if (!root) return;
+
+    var reqLang = root.getAttribute('data-required-lang');
+
+    var list = root.querySelector('.fluent-translations-list');
+    var addBlock = root.querySelector('.fluent-add-translation');
+    var showAddBtn = root.querySelector('.fluent-show-add-btn');
+
+    var select = root.querySelector('.fluent-lang-select');
+    var addBtn = root.querySelector('.fluent-add-btn');
+    var newInput = root.querySelector('.fluent-new-value'); // textarea
+    var newLabel = root.querySelector('.fluent-new-label');
+    var tpl = root.querySelector('.fluent-translation-template').textContent;
+
+    var langNames = {
+      {% for l in langs %}
+        "{{ l }}": "{{ lang_names.get(l, l)|replace('"','\\"') }}",
+      {% endfor %}
+    };
+
+    var placeholders = {
+      {% for l in langs %}
+        "{{ l }}": "{{ h.scheming_language_text(field.fluent_form_placeholder[l], l)|replace('"','\\"') }}",
+      {% endfor %}
+    };
+
+    function updateNewUI() {
+      var lang = select.value;
+      if (!lang) return;
+      newLabel.textContent = "{{ base_label|replace('"','\\"') }}" + " (" + (langNames[lang] || lang) + ")";
+      newInput.placeholder = placeholders[lang] || "";
+      newInput.disabled = false;
+    }
+
+    function refresh() {
+      var empty = select.options.length === 0;
+      select.disabled = empty;
+      addBtn.disabled = empty;
+
+      if (empty) {
+        newLabel.textContent = "";
+        newInput.placeholder = "";
+        newInput.value = "";
+        newInput.disabled = true;
+      } else {
+        updateNewUI();
+      }
+    }
+
+    // Mostrar el bloque de alta al pulsar el botón inicial
+    if (showAddBtn && addBlock) {
+      showAddBtn.addEventListener('click', function () {
+        addBlock.classList.remove('is-hidden');
+        showAddBtn.style.display = 'none';
+        refresh();
+        if (newInput) newInput.focus();
+      });
+    }
+
+    // Si ya hay traducciones existentes, mostrar directamente el bloque y ocultar el botón
+    if (list && list.querySelectorAll('.fluent-translation-item').length > 0) {
+      if (addBlock) addBlock.classList.remove('is-hidden');
+      if (showAddBtn) showAddBtn.style.display = 'none';
+    }
+
+    select.addEventListener('change', updateNewUI);
+
+    function reinitMarkdown(el) {
+      // CKAN inicializa markdown con JS propio. Intentamos re-ejecutarlo si existe.
+      // No rompe si no existe.
+      try {
+        if (window.ckan && window.ckan.module && window.jQuery) {
+          // inicializa módulos CKAN dentro del contenedor del nuevo textarea
+          window.jQuery(el).find('[data-module]').each(function () {
+            window.ckan.module.initializeElement(this);
+          });
+        }
+      } catch (e) {}
+    }
+
+    addBtn.addEventListener('click', function () {
+      var lang = select.value;
+      var value = (newInput.value || '').trim();
+      if (!lang) return;
+      if (!value) { newInput.focus(); return; }
+
+      // evita duplicados
+      if (list.querySelector('.fluent-translation-item[data-lang="' + lang + '"]')) return;
+
+      // Escapar para meter en textarea (mínimo)
+      var safeValue = value.replace(/<\/textarea>/gi, '<\\/textarea>');
+
+      var html = tpl
+        .replaceAll('__LANG__', lang)
+        .replaceAll('__LANGNAME__', (langNames[lang] || lang))
+        .replaceAll('__PLACEHOLDER__', (placeholders[lang] || ""))
+        .replaceAll('__VALUE__', safeValue);
+
+      var div = document.createElement('div');
+      div.innerHTML = html.trim();
+      var node = div.firstChild;
+      list.appendChild(node);
+
+      // quita idioma del select
+      var opt = select.querySelector('option[value="' + lang + '"]');
+      if (opt) opt.remove();
+
+      newInput.value = "";
+      refresh();
+
+      // Reinit markdown widgets dentro del nuevo nodo (si aplica)
+      reinitMarkdown(node);
+    });
+
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest('.fluent-remove-translation');
+      if (!btn) return;
+
+      var item = btn.closest('.fluent-translation-item');
+      if (!item) return;
+
+      var lang = item.getAttribute('data-lang');
+      item.remove();
+
+      // devuelve idioma al select
+      if (lang && lang !== reqLang) {
+        if (!select.querySelector('option[value="' + lang + '"]')) {
+          var opt = document.createElement('option');
+          opt.value = lang;
+          opt.textContent = (langNames[lang] || lang);
+          select.appendChild(opt);
+        }
+      }
+
+      refresh();
+    });
+
+    refresh();
+  })();
+  </script>
+  <hr/>
+</div>
+
+<style>
+/* Vertical SOLO en los campos marcados */
+.fluent-vertical .control-label{
+  float:none !important;
+  width:auto !important;
+  text-align:left !important;
+  display:block !important;
+  margin:0 0 6px 0 !important;
+}
+.fluent-vertical .controls{
+  margin-left:0 !important;
+  display:block !important;
+}
+
+/* Botón inicial (si tu theme lo deja “invisible”) */
+.fluent-show-add-btn{
+  color:#ffffff !important;
+  text-decoration:none;
+  font-weight:500;
+}
+.fluent-show-add-btn:hover{
+  color:#ffffff !important;
+  text-decoration:underline;
+}
+
+/* 3 columnas para alta de traducción */
+.fluent-add-row{
+  display:flex;
+  gap:60px;
+  align-items:flex-end;
+}
+.fluent-add-row .fluent-col-name{ flex: 0 0 60%; }
+.fluent-add-row .fluent-col-lang{ flex: 0 0 20%; }
+.fluent-add-row .fluent-col-btn { flex: 1 1 auto; display:flex; justify-content:flex-end; }
+.fluent-add-row label{
+  display:block;
+  float:none !important;
+  width:auto !important;
+  margin:0 0 6px 0 !important;
+  text-align:left !important;
+}
+.fluent-add-row textarea,
+.fluent-add-row select{ width:100%; }
+
+/* Ocultar alta al cargar */
+.fluent-add-translation.is-hidden{ display:none; }
+
+/* Responsive */
+@media (max-width: 768px){
+  .fluent-add-row{ flex-direction:column; align-items:stretch; gap:16px; }
+  .fluent-add-row .fluent-col-name,
+  .fluent-add-row .fluent-col-lang,
+  .fluent-add-row .fluent-col-btn{ flex:1 1 auto; }
+  .fluent-add-row .fluent-col-btn{ justify-content:stretch; }
+}
+/* Header a 2 columnas: campo principal + botón */
+.fluent-header-2col{
+  display:flex;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.fluent-header-left{
+  flex: 1 1 auto;
+}
+
+.fluent-header-right{
+  flex: 0 0 auto;
+  padding-bottom: 6px; /* ajusta para alinear con el textarea */
+}
+
+@media (max-width: 768px){
+  .fluent-header-2col{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fluent-header-right{
+    padding-bottom: 0;
+  }
+}
+
+</style>

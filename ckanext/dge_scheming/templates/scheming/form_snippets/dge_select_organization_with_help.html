@@ -1,0 +1,25 @@
+{# This is specific to datasets' owner_org field and won't work #}
+{# if used with other fields #}
+
+{% set organizations_create = h.organizations_available('create_dataset') %}
+{% set existing_org = data[field.field_name] or data.group_id %}
+
+{% macro organization_option_tag(organization, selected_org) %}
+  {% block organization_option scoped %}
+    {% set default_selected = (not existing_org and not data.id and organizations_create and organization.id == organizations_create[0].id) %}
+    <option value="{{ organization.id }}"{% if selected_org or default_selected %} selected="selected"{% endif %}>
+      {{ organization.display_name }}
+    </option>
+  {% endblock %}
+{% endmacro %}
+
+<div data-module="dataset-visibility">
+  {% snippet "scheming/form_snippets/dge_organization_with_help.html",
+    field=field,
+    data=data,
+    errors=errors,
+    organizations_available=h.dge_dataset_form_organization_list(),
+    org_required=not h.check_config_permission('create_unowned_dataset')
+      or h.scheming_field_required(field),
+    organization_option_tag=organization_option_tag %}
+</div>

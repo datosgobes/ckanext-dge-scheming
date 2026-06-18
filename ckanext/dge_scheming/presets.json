@@ -48,9 +48,9 @@
     {
       "preset_name": "multiple_checkbox_language",
       "values": {
-        "form_snippet": "multiple_checkbox_language.html",
+        "form_snippet": "dge_multiple_checkbox_language.html",
         "display_snippet": "multiple_choice_language.html",
-        "validators": "multiple_uri_text",
+        "validators": "multiple_checkbox_language",
         "output_validators": "multiple_uri_text_output"
       }
     },
@@ -105,6 +105,16 @@
         "display_snippet": "dge_multiple_text.html",
         "validators": "dge_scheming_multiple_text",
         "output_validators": "scheming_load_json"
+      }
+    },
+    {
+      "preset_name": "dge_multiple_access_service_select",
+      "values": {
+        "form_snippet": "dge_multiple_access_service_select.html",
+        "display_snippet": "multiple_uri_text.html",
+        "error_snippet": "multiple_uri_text.html",
+        "validators": "multiple_uri_text",
+        "output_validators": "multiple_uri_text_output"
       }
     }
   ]

@@ -1,0 +1,37 @@
+{% import 'macros/form.html' as form %}
+
+{%- set choices = [] -%}
+{%- for c in field.choices -%}
+  {%- do choices.append((c.value, h.scheming_language_text(c.label))) -%}
+{%- endfor -%}
+
+{%- set selected_value = data.get(field.field_name, '') -%}
+
+<div class="control-group visibilidad-field {% if errors[field.field_name] %}error{% endif %}">
+  <label class="control-label" for="field-{{ field.field_name }}">
+    {{ h.scheming_language_text(field.label) }}
+    <span class="control-required">{% if h.scheming_field_required(field) %} *{% endif %}</span>
+    {% snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+  </label>
+
+  <div class="controls">
+    <select
+      id="field-{{ field.field_name }}"
+      name="{{ field.field_name }}"
+      class="form-control js-visibilidad-select"
+      data-module="visibilidad-select"
+      {{ form.attributes(field.get('form_select_attrs', {})) }}>
+
+      {# Placeholder: hidden para que no aparezca en el desplegable #}
+      <option value="" disabled selected hidden>{{ _('Public / Private') }}</option>
+
+      {%- for val, label in choices -%}
+        <option value="{{ val }}" {% if val == selected_value %}selected{% endif %}>
+          {{ label }}
+        </option>
+      {%- endfor -%}
+    </select>
+
+    {% snippet 'scheming/form_snippets/help_text.html', field=field %}
+  </div>
+</div>

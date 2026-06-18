@@ -1,0 +1,32 @@
+{% import 'macros/form.html' as form %}
+
+{% set distribution_format_labels = h.dge_get_all_distribution_format_labels() %}
+{% set ns = namespace(options=[{'value': '', 'text': _('Select...')}]) %}
+{% for format_dict in distribution_format_labels %}
+    {% for uri, labels in format_dict.items() %}
+        {% set ns.options = ns.options + [{'value': uri, 'text': h.scheming_language_text(labels)}] %}
+    {% endfor %}
+{% endfor %}
+{% set first_option = ns.options[0] %}
+{% set rest_options = ns.options[1:] | sort(case_sensitive=false, attribute='text') %}
+{% set sorted_options = [first_option] + rest_options %}
+{% set selected = data[field.field_name] or '' %}
+
+<div class="control-group {% if errors.get(field.field_name) %}error{% endif %}">
+    <label class="control-label" for="field-{{ field.field_name }}">
+        {{ h.scheming_language_text(field.label) }}
+        {% if h.scheming_field_required(field) %}<span class="control-required">*</span>{% endif %}
+        {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+    </label>
+    <div class="controls">
+        <select 
+            id="field-{{ field.field_name }}" 
+            name="{{ field.field_name }}"
+            {{ form.attributes(field.get('form_select_attrs', {'class': 'form-control'})) }}
+        >
+            {% for option in sorted_options %}
+                <option value="{{ option.value }}"{% if option.value == selected %} selected{% endif %}>{{ option.text or option.value }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>

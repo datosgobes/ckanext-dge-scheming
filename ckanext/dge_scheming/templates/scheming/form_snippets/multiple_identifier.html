@@ -1,0 +1,56 @@
+{% import 'macros/form.html' as form %}
+
+{%- set values = data.get(field.field_name, []) -%}
+{%- if values and values is string -%}
+  {%- set values = [values] -%}
+{%- elif not values -%}
+  {%- set values = [''] -%}
+{%- endif -%}
+
+{%- set wrapper_id = 'multiple-identifier-' ~ field.field_name -%}
+
+<div
+  id="{{ wrapper_id }}"
+  class="control-group multiple-identifier-field {% if errors[field.field_name] %}error{% endif %}"
+>
+  <label class="control-label" for="field-{{ field.field_name }}-0">
+    {{ h.scheming_language_text(field.label) }}
+    {% if h.scheming_field_required(field) %} *{% endif %}
+    {% snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+  </label>
+
+  <div class="controls js-multiple-identifier-wrapper">
+    <div
+      class="js-multiple-identifier-list"
+      data-wrapper-id="{{ wrapper_id }}"
+      data-field-name="{{ field.field_name }}"
+      data-placeholder="{{ h.scheming_language_text(field.form_placeholder) if field.form_placeholder else '' }}"
+    >
+      {% for value in values %}
+      <div class="multiple-identifier-row">
+        <input
+          id="field-{{ field.field_name }}-{{ loop.index0 }}"
+          type="text"
+          name="{{ field.field_name }}"
+          value="{{ value }}"
+          placeholder="{{ h.scheming_language_text(field.form_placeholder) if field.form_placeholder else '' }}"
+          class="form-control multiple-identifier-input"
+        />
+
+        {# Solo mostrar botón eliminar si NO es la primera fila #}
+        {% if not loop.first %}
+        <button type="button" class="btn btn-danger js-remove-identifier">
+          <i class="fa fa-trash"></i>
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" class="btn btn-secondary btn-add-multiple-field js-add-identifier">
+      {{ _('Add field') }} {{ h.scheming_language_text(field.label if field.label is defined else '') }}
+    </button>
+
+    {% snippet 'scheming/form_snippets/help_text.html', field=field %}
+  </div>
+</div>

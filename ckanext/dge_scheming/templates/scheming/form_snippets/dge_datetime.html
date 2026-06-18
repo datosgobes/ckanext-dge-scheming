@@ -26,18 +26,23 @@
    {% if errors[field.field_name + '_time'] %}
       {% set aux_errors = aux_errors + errors[field.field_name + '_time'] %}
    {% endif %}
-
    <div class="div-date">
+
+        <label class="control-label label-container" for="field-{{field.field_name}}">
+            {{ h.scheming_language_text(field.label) }}
+            {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+        </label>
+
       {% call form.input_block(
           'field-' + field.field_name +  '-date',
-          h.scheming_language_text(field.label),
+          ' ',
           aux_errors,
           ['div-'+ 'field-' + field.field_name], [], '', is_required=h.scheming_field_required(field)
          )
       %}
         <input id="{{ 'field-' + field.field_name +  '-date' }}" type="date" name="{{ field.field_name + '_date' }}" value="{{ date }}" class="input-medium text--transform_uppercase" placeholder="AAAA/MM/DD" />
         <input id="{{ 'field-' + field.field_name + '-time' }}" type="time" name="{{ field.field_name + '_time' }}" value="{{ time }}" class="input-small" placeholder="hh:mm" />
-
+        
         {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
       {% endcall %}
    </div>

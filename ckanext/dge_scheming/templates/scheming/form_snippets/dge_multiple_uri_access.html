@@ -1,0 +1,197 @@
+{% import 'macros/form.html' as form %}
+
+{% set label_text = h.scheming_language_text(field.label) %}
+{% set placeholder_text = h.scheming_language_text(field.form_placeholder) if field.form_placeholder else '' %}
+{% set group_error = errors.get(field.field_name) %}
+
+<div class="multi-new-value multi-new-value-{{field.field_name}}" id="multi-value-{{field.field_name}}">
+   
+   <div class="control-label-wrapper" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+      <label class="control-label" for="field-{{field.field_name}}-1" style="margin-bottom: 0;">
+         {{label_text}}
+         <span title="Required field" class="control-required">*</span>
+      </label>
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+   </div>
+   
+   {% set vars = {'formulary': False, 'indice': 1} %}
+   
+   {%- for valor in data | sort -%}
+      {% if valor.startswith(field.field_name + '-') and data.get(valor) %}
+         {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+         {% if vars.indice == 1 and group_error and not field_error %}
+            {% set field_error = group_error %}
+         {% endif %}
+         <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}" data-index="{{vars.indice}}">
+            <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+               <div class="controls">
+                  <input 
+                     id="field-{{field.field_name}}-{{vars.indice}}" 
+                     type="text" 
+                     name="{{field.field_name}}-{{vars.indice}}" 
+                     value="{{data.get(valor)}}" 
+                     placeholder="{{placeholder_text}}"
+                     class="form-control"
+                  />
+                  {% if field_error %}
+                     <span class="help-inline">{{ field_error|join(', ') }}</span>
+                  {% endif %}
+               </div>
+            </div>
+            {% if vars.indice > 1 %}
+               <button type="button" class="btn btn-danger btn-remove-field" onclick="removeFieldAccess_{{field.field_name}}('wrapper-{{field.field_name}}-{{vars.indice}}')" title="Remove">
+                  <i class="fa fa-trash"></i>
+               </button>
+            {% endif %}
+         </div>
+         {% if vars.update({'formulary': True}) %}{% endif %}
+         {% if vars.update({'indice': vars.indice + 1}) %}{% endif %}
+      {% endif %}
+   {%- endfor -%}
+   
+   {% if not vars.formulary %}
+      {%- set values = data.get(field.field_name, []) -%}
+      {%- if values -%}
+         {%- for element in values -%}
+            {%- if element -%}
+               {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+               {% if vars.indice == 1 and group_error and not field_error %}
+                  {% set field_error = group_error %}
+               {% endif %}
+               <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}" data-index="{{vars.indice}}">
+                  <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+                     <div class="controls">
+                        <input 
+                           id="field-{{field.field_name}}-{{vars.indice}}" 
+                           type="text" 
+                           name="{{field.field_name}}-{{vars.indice}}" 
+                           value="{{element}}" 
+                           placeholder="{{placeholder_text}}"
+                           class="form-control"
+                        />
+                        {% if field_error %}
+                           <span class="help-inline">{{ field_error|join(', ') }}</span>
+                        {% endif %}
+                     </div>
+                  </div>
+                  {% if vars.indice > 1 %}
+                     <button type="button" class="btn btn-danger btn-remove-field" onclick="removeFieldAccess_{{field.field_name}}('wrapper-{{field.field_name}}-{{vars.indice}}')" title="Remove">
+                        <i class="fa fa-trash"></i>
+                     </button>
+                  {% endif %}
+               </div>
+               {% if vars.update({'indice': vars.indice + 1}) %}{% endif %}
+            {%- endif -%}
+         {%- endfor -%}
+      {%- endif -%}
+   {% endif %}
+   
+   {% if vars.indice == 1 %}
+      {% set field_error = errors.get(field.field_name + '-1') %}
+      {% if group_error and not field_error %}
+         {% set field_error = group_error %}
+      {% endif %}
+      <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-1" data-index="1">
+         <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+            <div class="controls">
+               <input 
+                  id="field-{{field.field_name}}-1" 
+                  type="text" 
+                  name="{{field.field_name}}-1" 
+                  value="" 
+                  placeholder="{{placeholder_text}}"
+                  class="form-control"
+               />
+               {% if field_error %}
+                  <span class="help-inline">{{ field_error|join(', ') }}</span>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+      {% if vars.update({'indice': 2}) %}{% endif %}
+   {% endif %}
+   
+   <div id="multi-value-{{field.field_name}}-link" class="multi-add-field control-group">
+      {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+      <div class="controls">
+         <button type="button" class="btn btn-secondary btn-add-multiple-field btn-add-multiple-field" onclick="addNewFieldAccess_{{field.field_name}}()">
+            {{ _('Add field') }} {{label_text}}
+         </button>
+      </div>
+   </div>
+
+   <script>
+   (function() {
+      'use strict';
+      
+      var fieldName = '{{field.field_name}}';
+      var labelText = '{{label_text|replace("'", "\\'")|replace("\n", "")}}';
+      var placeholderText = '{{placeholder_text|replace("'", "\\'")|replace("\n", "")}}';
+      
+      window['addNewFieldAccess_' + fieldName] = function() {
+         var container = document.getElementById('multi-value-' + fieldName);
+         var wrappers = container.querySelectorAll('.url-field-wrapper');
+         var nextIndex = wrappers.length + 1;
+         var wrapperId = 'wrapper-' + fieldName + '-' + nextIndex;
+         
+         var html = 
+            '<div class="url-field-wrapper" id="' + wrapperId + '" data-index="' + nextIndex + '">' +
+               '<div class="control-group control-medium div-' + fieldName + '">' +
+                  '<div class="controls">' +
+                     '<input ' +
+                        'id="field-' + fieldName + '-' + nextIndex + '" ' +
+                        'type="text" ' +
+                        'name="' + fieldName + '-' + nextIndex + '" ' +
+                        'value="" ' +
+                        'placeholder="' + placeholderText + '" ' +
+                        'class="form-control"' +
+                     '/>' +
+                  '</div>' +
+               '</div>' +
+               '<button type="button" class="btn btn-danger btn-remove-field" onclick="window[\'removeFieldAccess_' + fieldName + '\'](\'' + wrapperId + '\')" title="Remove">' +
+                  '<i class="fa fa-trash"></i>' +
+               '</button>' +
+            '</div>';
+         
+         var linkDiv = document.getElementById('multi-value-' + fieldName + '-link');
+         linkDiv.insertAdjacentHTML('beforebegin', html);
+      };
+      
+      window['removeFieldAccess_' + fieldName] = function(wrapperId) {
+         var wrapper = document.getElementById(wrapperId);
+         if (wrapper) {
+            wrapper.remove();
+            // FIX: Reindexar campos después de borrar
+            window['reindexFields_' + fieldName]();
+         }
+      };
+      
+      // FIX: Función para reindexar todos los campos secuencialmente
+      window['reindexFields_' + fieldName] = function() {
+         var container = document.getElementById('multi-value-' + fieldName);
+         var wrappers = container.querySelectorAll('.url-field-wrapper');
+         
+         wrappers.forEach(function(wrapper, idx) {
+            var newIndex = idx + 1;
+            
+            // Actualizar data-index
+            wrapper.setAttribute('data-index', newIndex);
+            wrapper.id = 'wrapper-' + fieldName + '-' + newIndex;
+            
+            // Actualizar input
+            var input = wrapper.querySelector('input');
+            if (input) {
+               input.id = 'field-' + fieldName + '-' + newIndex;
+               input.name = fieldName + '-' + newIndex;
+            }
+            
+            // Actualizar botón de borrar si existe
+            var removeBtn = wrapper.querySelector('.btn-remove-field');
+            if (removeBtn) {
+               removeBtn.setAttribute('onclick', "window['removeFieldAccess_" + fieldName + "']('wrapper-" + fieldName + "-" + newIndex + "')");
+            }
+         });
+      };
+   })();
+   </script>
+</div>

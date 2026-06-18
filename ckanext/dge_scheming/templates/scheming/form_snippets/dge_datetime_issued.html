@@ -1,0 +1,54 @@
+{% import 'macros/form.html' as form %}
+{% set date = data.get(field.field_name + '_date') %}
+{% set time = data.get(field.field_name + '_time') %}
+
+{% if not date is string and not time is string %}
+    {% set date = data.get(field.field_name) %}
+    {% if date %}
+        {% set parts = data.get(field.field_name).split('T') %}
+        {% set date = parts[0] %}
+        {% set time = parts[1] %}
+    {% endif %}
+    {% if not date %}
+        {% set date = '' %}
+    {% endif %}
+    {% if not time %}
+        {% set time = '' %}
+    {% endif %}
+{% endif %}
+
+{# Obtener label con idioma correcto #}
+{% set label_text = h.scheming_language_text(field.label, h.lang()) %}
+
+<div class="div-{{field.field_name}} control-group" id="div-{{field.field_name}}" data-field-type="issued">
+   
+   {# Label explícito con popover al lado #}
+   <div class="control-label-wrapper" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+      <label class="control-label" for="field-{{field.field_name}}-date" style="margin-bottom: 0;">
+         {{ label_text }}
+         {%- if h.scheming_field_required(field) -%}
+            <span title="{{ _('Required field') }}" class="control-required">*</span>
+         {%- endif -%}
+      </label>
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+   </div>
+   
+   {% set aux_errors = [] %}
+   {% if errors[field.field_name + '_date'] %}
+      {% set aux_errors = errors[field.field_name + '_date'] %}
+   {% endif %}
+   {% if errors[field.field_name + '_time'] %}
+      {% set aux_errors = aux_errors + errors[field.field_name + '_time'] %}
+   {% endif %}
+   
+   <div class="controls div-date">
+      {% if aux_errors %}
+         <span class="error-block">{{ aux_errors | join(', ') }}</span>
+      {% endif %}
+      
+      <input id="field-{{field.field_name}}-date" type="date" name="{{ field.field_name + '_date' }}" value="{{ date }}" class="input-medium text--transform_uppercase dge-date-input" placeholder="AAAA/MM/DD" data-pair="modified" />
+      <input id="field-{{field.field_name}}-time" type="time" name="{{ field.field_name + '_time' }}" value="{{ time }}" class="input-small dge-time-input" placeholder="hh:mm" data-pair="modified" />
+      
+      {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+   </div>
+</div>

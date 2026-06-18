@@ -1,0 +1,179 @@
+{% import 'macros/form.html' as form %}
+
+{# ========= Configuración de nombres de idiomas por UI ========= #}
+{%- set ui_lang = h.lang() -%}
+
+{%- set lang_names_by_ui = {
+    'es': {
+        'es': 'Español',
+        'en': 'Inglés',
+        'ca': 'Catalán',
+        'gl': 'Gallego',
+        'eu': 'Euskera'
+    },
+    'en': {
+        'es': 'Spanish',
+        'en': 'English',
+        'ca': 'Catalan',
+        'gl': 'Galician',
+        'eu': 'Basque'
+    },
+    'ca': {
+        'es': 'Espanyol',
+        'en': 'Anglès',
+        'ca': 'Català',
+        'gl': 'Gallec',
+        'eu': 'Basc'
+    },
+    'gl': {
+        'es': 'Español',
+        'en': 'Inglés',
+        'ca': 'Catalán',
+        'gl': 'Galego',
+        'eu': 'Éuscaro'
+    },
+    'eu': {
+        'es': 'Gaztelania',
+        'en': 'Ingelesa',
+        'ca': 'Katalana',
+        'gl': 'Galiziera',
+        'eu': 'Euskara'
+    }
+} -%}
+
+{%- set lang_names = lang_names_by_ui.get(ui_lang, lang_names_by_ui['es']) -%}
+{%- set langs = h.fluent_form_languages(field, entity_type, object_type, schema) -%}
+{%- set main_lang = langs|first -%}
+{%- set field_label = h.scheming_language_text(field.label) or field.field_name -%}
+
+<div class="fluent-field-wrapper" data-field-name="{{ field.field_name }}">
+  
+  {# Campo principal #}
+  <div class="fluent-main-field control-group">
+    {% call form.input(
+      field.field_name + '-' + main_lang,
+      id='field-' + field.field_name + '-' + main_lang,
+      label=field_label + ' (' + lang_names.get(main_lang, main_lang) + ')',
+      placeholder=h.scheming_language_text(field.form_placeholder.get(main_lang, '')),
+      value=data[field.field_name + '-' + main_lang]
+          or ','.join(data.get(field.field_name, {}).get(main_lang, [])),
+      error=errors[field.field_name + '-' + main_lang],
+      classes=['control-medium'],
+      attrs=field.form_attrs if 'form_attrs' in field else {},
+      is_required=h.scheming_field_required(field)
+      ) %}
+      {%- snippet 'scheming/form_snippets/fluent_help_text.html',
+        field=field,
+        lang=main_lang -%}
+    {% endcall %}
+    
+    <button type="button" class="btn btn-secondary btn-add-multiple-field btn-add-translation" onclick="addTranslationField('{{ field.field_name }}')">
+      {{ _("Add translation") }}
+    </button>
+  </div>
+
+  {# Contenedor para traducciones adicionales #}
+  <div class="fluent-translations-container" id="translations-{{ field.field_name }}">
+    {%- for lang in langs -%}
+      {% if lang != main_lang %}
+        {% set lang_value = data[field.field_name + '-' + lang]
+            or ','.join(data.get(field.field_name, {}).get(lang, [])) %}
+        
+        <div class="translation-row translation-added" data-lang="{{ lang }}" {% if not lang_value %}style="display: none;"{% endif %}>
+          <div class="translation-field-col">
+            {% call form.input(
+              field.field_name + '-' + lang,
+              id='field-' + field.field_name + '-' + lang,
+              label=field_label + ' (' + lang_names.get(lang, lang) + ')',
+              placeholder=h.scheming_language_text(field.form_placeholder.get(lang, '')),
+              value=lang_value,
+              error=errors[field.field_name + '-' + lang],
+              classes=['control-medium'],
+              attrs=field.form_attrs if 'form_attrs' in field else {},
+              is_required=false
+              ) %}
+              {%- snippet 'scheming/form_snippets/fluent_help_text.html',
+                field=field,
+                lang=lang -%}
+            {% endcall %}
+          </div>
+          
+          <div class="translation-actions-col">
+            <button type="button" class="btn btn-danger btn-remove-translation" onclick="removeTranslationField(this)" title="{{ _('Eliminar traducción') }}">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      {% endif %}
+    {%- endfor -%}
+  </div>
+
+  {# Formulario para añadir nueva traducción #}
+  <div class="fluent-add-form" id="add-form-{{ field.field_name }}" style="display: none;">
+    <div class="translation-row translation-new">
+      
+      {# Columna 1: Campo de entrada #}
+      <div class="translation-input-col">
+        <div class="control-group control-medium">
+          <label class="control-label" for="new-field-{{ field.field_name }}">
+            {{ field_label }}
+          </label>
+          <div class="controls">
+            <input type="text" 
+                   id="new-field-{{ field.field_name }}" 
+                   name="new-{{ field.field_name }}"
+                   class="fluent-new-input form-control"
+                   value="" 
+                   placeholder="{{ _('Introduce la traducción...') }}" />
+            {# Mensaje de error inline para el campo #}
+            <span class="error-block fluent-error-input" style="display: none;">
+              {{ _('Please enter a translation') }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {# Columna 2: Selector de idioma #}
+      <div class="translation-select-col">
+        <div class="control-group">
+          <label class="control-label" for="lang-select-{{ field.field_name }}">
+            {{ _('Translation language') }} *
+          </label>
+          <div class="controls">
+            <select id="lang-select-{{ field.field_name }}" 
+                    name="lang-{{ field.field_name }}"
+                    class="fluent-lang-select form-control">
+              <option value="">{{ _('Seleccionar...') }}</option>
+              {%- for l in langs -%}
+                {%- if l != main_lang -%}
+                  <option value="{{ l }}">{{ lang_names.get(l, l) }}</option>
+                {%- endif -%}
+              {%- endfor -%}
+            </select>
+            {# Mensaje de error inline para el select #}
+            <span class="error-block fluent-error-lang" style="display: none;">
+              {{ _('Please select a language') }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {# Columna 3: Botones #}
+      <div class="translation-buttons-col">
+        <div class="control-group">
+          <label class="control-label">&nbsp;</label>
+          <div class="controls fluent-buttons-wrapper">
+            <button type="button" class="btn btn-secondary btn-confirm-add" onclick="confirmAddTranslation('{{ field.field_name }}')">
+              {{ _("Add translation") }}
+            </button>
+            <button type="button" class="btn btn-danger btn-cancel-add" onclick="cancelAddTranslation('{{ field.field_name }}')">
+              {{ _('Cancel') }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+</div>

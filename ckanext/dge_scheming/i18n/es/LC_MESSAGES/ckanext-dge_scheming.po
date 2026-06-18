@@ -1,0 +1,394 @@
+# Spanish translations for ckanext-dge-scheming.
+# Copyright (C) 2026 Entidad Pública Empresarial Red.es
+#
+# This file is part of "dge-harvest (datos.gob.es)".
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ckanext-dge-scheming 1.0.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-07 15:44+0000\n"
+"PO-Revision-Date: 2026-04-07 08:01+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.7.0\n"
+
+#: ckanext/dge_scheming/validators.py:96 ckanext/dge_scheming/validators.py:113
+#: ckanext/dge_scheming/validators.py:202
+msgid "The URL format is not valid"
+msgstr "El formato de la URL no es válido"
+
+#: ckanext/dge_scheming/validators.py:99 ckanext/dge_scheming/validators.py:116
+#: ckanext/dge_scheming/validators.py:206
+msgid "The URI format is not valid"
+msgstr "El formato de la URI no es válido"
+
+#: ckanext/dge_scheming/validators.py:183
+#: ckanext/dge_scheming/validators.py:326
+#: ckanext/dge_scheming/validators.py:1472
+#: ckanext/dge_scheming/validators.py:1772
+msgid "Expecting list of strings"
+msgstr "Se espera una lista de cadenas"
+
+#: ckanext/dge_scheming/validators.py:192
+#, python-format
+msgid "Invalid type for repeating url text: %r"
+msgstr "Tipo inválido para texto de URL repetido: %r"
+
+#: ckanext/dge_scheming/validators.py:209
+#: ckanext/dge_scheming/validators.py:848
+#: ckanext/dge_scheming/validators.py:971
+#: ckanext/dge_scheming/validators.py:1788
+#, python-format
+msgid "Invalid encoding for \"%s\" value"
+msgstr "Codificación inválida para el valor \"%s\""
+
+#: ckanext/dge_scheming/validators.py:215
+#: ckanext/dge_scheming/validators.py:250
+#: ckanext/dge_scheming/validators.py:253
+#: ckanext/dge_scheming/validators.py:854
+#: ckanext/dge_scheming/validators.py:882
+#: ckanext/dge_scheming/validators.py:1390
+#: ckanext/dge_scheming/validators.py:1804
+msgid "Missing value"
+msgstr "Falta valor"
+
+#: ckanext/dge_scheming/validators.py:241
+#, python-format
+msgid "The URL format for \"%s\" is not valid"
+msgstr "El formato de la URL para \"%s\" no es válido"
+
+#: ckanext/dge_scheming/validators.py:247
+#, python-format
+msgid "The URI format for \"%s\" is not valid"
+msgstr "El formato de la URI para \"%s\" no es válido"
+
+#: ckanext/dge_scheming/validators.py:332
+msgid "It is mandatory to include Spanish if any languages are selected"
+msgstr "Es obligatorio incluir el idioma español si se seleccionan idiomas"
+
+#: ckanext/dge_scheming/validators.py:365
+#: ckanext/dge_scheming/validators.py:820
+#: ckanext/dge_scheming/validators.py:943
+#: ckanext/dge_scheming/validators.py:1201
+#: ckanext/dge_scheming/validators.py:1635
+msgid "Failed to decode JSON string"
+msgstr "No se pudo decodificar la cadena JSON"
+
+#: ckanext/dge_scheming/validators.py:368
+#: ckanext/dge_scheming/validators.py:823
+#: ckanext/dge_scheming/validators.py:946
+#: ckanext/dge_scheming/validators.py:1204
+#: ckanext/dge_scheming/validators.py:1638
+msgid "Invalid encoding for JSON string"
+msgstr "Codificación inválida para la cadena JSON"
+
+#: ckanext/dge_scheming/validators.py:371
+#: ckanext/dge_scheming/validators.py:826
+#: ckanext/dge_scheming/validators.py:949
+#: ckanext/dge_scheming/validators.py:1207
+#: ckanext/dge_scheming/validators.py:1292
+#: ckanext/dge_scheming/validators.py:1643
+msgid "Expecting JSON object"
+msgstr "Se espera un objeto JSON"
+
+#: ckanext/dge_scheming/validators.py:376
+msgid "The JSON object must contain type and value keys"
+msgstr "El objeto JSON debe contener las claves 'type' y 'value'"
+
+#: ckanext/dge_scheming/validators.py:384
+msgid "The frequency type is no allowed"
+msgstr "El tipo de frecuencia no está permitido"
+
+#: ckanext/dge_scheming/validators.py:388
+msgid "The frequency value is not an integer"
+msgstr "El valor de la frecuencia no es un entero"
+
+#: ckanext/dge_scheming/validators.py:391
+msgid "The frequency value is mandatory"
+msgstr "El valor de la frecuencia es obligatorio"
+
+#: ckanext/dge_scheming/validators.py:393
+msgid "The frequency type is mandatory"
+msgstr "El tipo de frecuencia es obligatorio"
+
+#: ckanext/dge_scheming/validators.py:655
+msgid "Invalid field structure, it is not a valid JSON"
+msgstr "Estructura de campo inválida, no es un JSON válido"
+
+#: ckanext/dge_scheming/validators.py:658
+msgid "Expecting valid JSON value"
+msgstr "Se espera un valor JSON válido"
+
+#: ckanext/dge_scheming/validators.py:673
+msgid "From value: Date format incorrect"
+msgstr "Valor para 'Desde': Formato de fecha incorrecto"
+
+#: ckanext/dge_scheming/validators.py:683
+msgid "To value: Date format incorrect"
+msgstr "Valor para 'Hasta': Formato de fecha incorrecto"
+
+#: ckanext/dge_scheming/validators.py:687
+msgid "Date period without from and to"
+msgstr "Periodo de fechas sin 'desde' y 'hasta'"
+
+#: ckanext/dge_scheming/validators.py:726
+msgid "Date time format incorrect"
+msgstr "Formato de fecha y hora incorrecto"
+
+#: ckanext/dge_scheming/validators.py:833
+#: ckanext/dge_scheming/validators.py:956
+#: ckanext/dge_scheming/validators.py:1299
+#, python-format
+msgid "Invalid type for language code: %r"
+msgstr "Tipo inválido para el código de idioma: %r"
+
+#: ckanext/dge_scheming/validators.py:840
+#: ckanext/dge_scheming/validators.py:963
+#: ckanext/dge_scheming/validators.py:1306
+#, python-format
+msgid "Invalid type for \"%s\" value"
+msgstr "Tipo inválido para el valor \"%s\""
+
+#: ckanext/dge_scheming/validators.py:869
+#: ckanext/dge_scheming/validators.py:996
+#: ckanext/dge_scheming/validators.py:1303
+#: ckanext/dge_scheming/validators.py:1359
+#, python-format
+msgid "Invalid language code: \"%s\""
+msgstr "Código de idioma inválido: \"%s\""
+
+#: ckanext/dge_scheming/validators.py:977
+#: ckanext/dge_scheming/validators.py:981
+#: ckanext/dge_scheming/validators.py:1007
+#: ckanext/dge_scheming/validators.py:1011
+msgid "Missing required language value"
+msgstr "Falta el valor de idioma requerido"
+
+#: ckanext/dge_scheming/validators.py:1032
+#: ckanext/dge_scheming/validators.py:1041
+msgid "A organization must be supplied"
+msgstr "Se debe proporcionar una organización"
+
+#: ckanext/dge_scheming/validators.py:1046
+msgid "Organization does not exist"
+msgstr "La organización no existe"
+
+#: ckanext/dge_scheming/validators.py:1067
+msgid "Organization does not exist or is not active"
+msgstr "La organización no existe o no está activa"
+
+#: ckanext/dge_scheming/validators.py:1212
+msgid ""
+"At least of of the following subfields must be included: has_email, "
+"has_url"
+msgstr ""
+"Al menos uno de los siguientes subcampos debe incluirse: has_email, "
+"has_url"
+
+#: ckanext/dge_scheming/validators.py:1312
+msgid "Invalid type for \"{lang}\" value item {num}"
+msgstr "Tipo inválido para el elemento {num} del valor \"{lang}\""
+
+#: ckanext/dge_scheming/validators.py:1321
+msgid "Expected UTF-8 encoding for \"{lang}\" value item {num}"
+msgstr "Se esperaba codificación UTF-8 para el elemento {num} del valor \"{lang}\""
+
+#: ckanext/dge_scheming/validators.py:1342
+#, python-format
+msgid "Required language \"%s\" missing"
+msgstr "Falta el idioma requerido \"%s\""
+
+#: ckanext/dge_scheming/validators.py:1364
+msgid "Invalid type"
+msgstr "Tipo inválido"
+
+#: ckanext/dge_scheming/validators.py:1372
+msgid "Expected UTF-8 encoding"
+msgstr "Se esperaba codificación UTF-8"
+
+#: ckanext/dge_scheming/validators.py:1498
+#: ckanext/dge_scheming/validators.py:1668
+#, python-format
+msgid "Unexpected choice \"%s\""
+msgstr "Opción inesperada \"%s\""
+
+#: ckanext/dge_scheming/validators.py:1511
+#: ckanext/dge_scheming/validators.py:1676
+#: ckanext/ckanext-dge-scheming/ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_theme_select_with_help.html :65
+msgid "Select at least one"
+msgstr "Selecciona al menos uno"
+
+#: ckanext/dge_scheming/validators.py:1570
+msgid "Dates must be provided as strings or datetime objects"
+msgstr "Las fechas deben proporcionarse como cadenas o como objetos datetime"
+
+#: ckanext/dge_scheming/validators.py:1575
+msgid ""
+"Date format incorrect. Supported formats are YYYY, YYYY-MM, YYYY-MM-DD "
+"and YYYY-MM-DDTHH:MM:SS"
+msgstr ""
+"Formato de fecha incorrecto. Los formatos admitidos son YYYY, YYYY-MM, YYYY-MM-DD "
+"y YYYY-MM-DDTHH:MM:SS"
+
+#: ckanext/dge_scheming/validators.py:1781
+#, python-format
+msgid "Invalid type for repeating text: %r"
+msgstr "Tipo inválido para texto repetido: %r"
+
+#: ckanext/dge_scheming/templates/scheming/display_snippets/date_frequency.html:3
+#, python-format
+msgid "Every %(value)s %(type)s"
+msgstr "Cada %(value)s %(type)s"
+
+#: ckanext/dge_scheming/templates/scheming/display_snippets/date_period.html:8
+#, python-format
+msgid "From %(date)s"
+msgstr "Desde %(date)s"
+
+#: ckanext/dge_scheming/templates/scheming/display_snippets/date_period.html:12
+#, python-format
+msgid "to %(date)s"
+msgstr "hasta %(date)s"
+
+#: ckanext/dge_scheming/templates/scheming/display_snippets/date_period.html:18
+#, python-format
+msgid "To %(date)s"
+msgstr "Hasta %(date)s"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/_organization_select.html:21
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_organization_with_help.html:35
+#: ckanext/dge_scheming/templates/scheming/form_snippets/select_organization.html:31
+msgid "No organization"
+msgstr "Sin organización"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/date_frequency.html:14
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_access_service_select.html:45
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_checkbox_language.html:38
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_theme_select_with_help.html:40
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_resource_format_select.html:4
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_select_deprecated.html:26
+msgid "Select..."
+msgstr "Seleccionar..."
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/date_period.html:158
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_access.html:108
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_normative.html:120
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text.html:112
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_deprecated.html:116
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_identifier.html:42
+msgid "Add field"
+msgstr "Añadir"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_datetime_deprecated.html:33
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_datetime_issued.html:30
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_datetime_modified.html:30
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields.html:111
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_access.html:11
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_select_deprecated.html:16
+msgid "Required field"
+msgstr "Campo obligatorio"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_help_popover.html:43
+msgid "View more"
+msgstr "Ver más"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields.html:150
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields.html:238
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields_deprecated.html:146
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields_deprecated.html:234
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields_not_required.html:147
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields_not_required.html:235
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_tags.html:150
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_tags.html:220
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_markdown.html:62
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_markdown.html:143
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_text.html:65
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_text.html:149
+msgid "Add translation"
+msgstr "Añadir traducción"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields.html:225
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_fields_not_required.html:222
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multilanguage_tags.html:205
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_markdown.html:130
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_dynamic_language_text.html:136
+msgid "Translation language"
+msgstr "Idioma de la traducción"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_access_service_select.html:91
+msgid "There are still no data services available to link"
+msgstr "Aún no hay servicios de datos disponibles para vincular"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_access_service_select.html:92
+msgid "Why don't you add one?"
+msgstr "¿Por qué no añades alguno?"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_text.html:13
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_access.html:37
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_access.html:69
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_normative.html:39
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_normative.html:77
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text.html:41
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text.html:73
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_dataservice.html:29
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_dataservice.html:71
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_dataservice.html:132
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_deprecated.html:45
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_deprecated.html:77
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_deprecated_dataset.html:46
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_deprecated_dataset.html:76
+msgid "Remove"
+msgstr "Eliminar"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_text.html:46
+#: ckanext/dge_scheming/templates/scheming/form_snippets/multiple_uri_text.html:88
+msgid "Add"
+msgstr "Añadir"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_multiple_uri_text_dataservice.html:99
+msgid "Add new"
+msgstr "Añadir nuevo"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/dge_visibility_select.html:25
+msgid "Public / Private"
+msgstr "Público / privado"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/select_organization.html:48
+msgid "Visibility"
+msgstr "Visibilidad"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/select_organization.html:51
+msgid "Private"
+msgstr "Privado"
+
+#: ckanext/dge_scheming/templates/scheming/form_snippets/select_organization.html:51
+msgid "Public"
+msgstr "Público"
+
+#: ckanexest/dge_scheming/templates/scheming/package/snippets/resource_form.html:21
+msgid "Add data"
+msgstr "Añadir datos"
+
+#: ckanext/dge_scheming/templates/scheming/package/snippets/resource_form.html:82
+msgid "Save & add another"
+msgstr "Guardar y añadir otro"
+

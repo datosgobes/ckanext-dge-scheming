@@ -97,9 +97,9 @@ setup(
     entry_points='''
         [ckan.plugins]
         dge_scheming=ckanext.dge_scheming.plugin:DgeSchemingPlugin
-	
-    [babel.extractors]
-	ckan = ckan.lib.extract:extract_ckan
+
+    	[babel.extractors]
+    	ckan = ckan.lib.extract:extract_ckan
     ''',
 
     # If you are changing from the default layout of your extension, you may

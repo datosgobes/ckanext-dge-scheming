@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import json
 from ckanext.scheming.helpers import lang
 import ckan.lib.helpers as h
 from ckan.plugins.toolkit import (config, _)
@@ -228,33 +229,151 @@ def dge_get_application_profile(dataset_dict):
             application_profile = dataset_dict[data_profile_value_key]
     return application_profile
 
+def dge_package_dict_has_guid(package_dict):
+    '''
+    :param package_dict: package dict
+
+    Return True if package has guid. False otherwise
+    '''
+    if package_dict:
+        extras = package_dict['extras'] if ('extras' in package_dict and package_dict['extras']) else None
+        if extras:
+            for extra in extras:
+                if extra.get('key') == ds_constants.GUID_KEY:
+                    return True
+    return False
+
+def dge_is_manual_dataset(package_dict):
+    '''
+    :param package_dict: package dict
+
+    Return True if dataset has no guid and should be treated as manual.
+    False otherwise.
+    '''
+    if not package_dict:
+        return True
+    return not dge_package_dict_has_guid(package_dict)
+
+def _dge_package_dict(package):
+    return {
+        'id': package.id,
+        'extras': [
+            {'key': extra.key, 'value': extra.value}
+            for extra in package.extras_list
+            if getattr(extra, 'state', 'active') == 'active'
+        ]
+    }
+
+def dge_sync_served_by_dataservice_for_manual_package(package):
+    '''
+    Recalculate dataset served_by_dataservice from package resources.
+    Only applies to manual datasets.
+    '''
+    if not package:
+        return
+    if getattr(package, 'type', None) != 'dataset':
+        return
+    if not dge_is_manual_dataset(_dge_package_dict(package)):
+        return
+
+    served_by_dataservice = []
+    for resource in package.resources:
+        access_service_values = resource.extras.get(
+            ds_constants.RESOURCE_ACCESS_SERVICE_KEY
+        )
+        for value in _json_list(access_service_values):
+            if value and value not in served_by_dataservice:
+                served_by_dataservice.append(value)
+
+    recalculated_value = json.dumps(served_by_dataservice)
+
+    # To prevent package_update from deleting served_by_dataservice and keep
+    # the derived value synchronized, force a real mutation on package.extras.
+    # This field is defined as hidden in the scheming schema, so dataset
+    # metadata edits do not send it back in the form payload and CKAN may
+    # treat the missing extra as removed. When the recalculated value matches
+    # the previous one, a simple reassignment can be treated as no effective
+    # change and the pending deletion may still win. Deleting and recreating
+    # the key avoids that case.
+    if ds_constants.SERVED_BY_DATASERVICE_KEY in package.extras:
+        del package.extras[ds_constants.SERVED_BY_DATASERVICE_KEY]
+
+    package.extras[ds_constants.SERVED_BY_DATASERVICE_KEY] = recalculated_value
+    log.debug(
+        '[dge_sync_served_by_dataservice_for_manual_package] '
+        'package_id=%s stored=%s',
+        package.id,
+        package.extras.get(ds_constants.SERVED_BY_DATASERVICE_KEY)
+    )
+
+def _json_list(value):
+    if value in (None, ''):
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, list) else [parsed]
+        except ValueError:
+            return [value]
+    return [value]
+
 def dge_is_nti_application_profile(dataset_dict):
     '''
     :param datasect_dict: dataset dict
     
     Return True if dataset application profile is NTI. False otherwise
+    :rtype: bool
     '''
-    is_nti = False
-    for data_key in dataset_dict:
-        if len(data_key) == 3 and dataset_dict[data_key] == ds_constants.APPLICATION_PROFILE_KEY:
-            data_key_index = data_key[1]
-            data_profile_value_key = ('extras', data_key_index, 'value')
-            is_nti = True if dataset_dict[data_profile_value_key] == ds_constants.NTI else False
-    return is_nti
+    is_nti_application_profile = any(
+        dataset_dict.get((ds_constants.EXTRAS, key[1], ds_constants.VALUE)) == ds_constants.NTI
+        for key, value in dataset_dict.items()
+        if (
+            isinstance(key, tuple)
+            and len(key) == 3
+            and key[0] == ds_constants.EXTRAS
+            and key[2] == ds_constants.KEY
+            and value == ds_constants.APPLICATION_PROFILE_KEY
+        )
+    )
+    return is_nti_application_profile
 
 def dge_is_dcatapes_application_profile(dataset_dict):
     '''
     :param datasect_dict: dataset dict
     
     Return True if dataset application profile is DCATAPES. False otherwise
+    :rtype: bool
     '''
-    is_dcatapes = False
-    for data_key in dataset_dict:
-        if len(data_key) == 3 and dataset_dict[data_key] == ds_constants.APPLICATION_PROFILE_KEY:
-            data_key_index = data_key[1]
-            data_profile_value_key = ('extras', data_key_index, 'value')
-            is_dcatapes = True if dataset_dict[data_profile_value_key] == ds_constants.DCATAPES_100 else False
-    return is_dcatapes
+    is_dcatapes_application_profile = any(
+        dataset_dict.get((ds_constants.EXTRAS, key[1], ds_constants.VALUE)) == ds_constants.DCATAPES_100
+        for key, value in dataset_dict.items()
+        if (
+            isinstance(key, tuple)
+            and len(key) == 3
+            and key[0] == ds_constants.EXTRAS
+            and key[2] == ds_constants.KEY
+            and value == ds_constants.APPLICATION_PROFILE_KEY
+        )
+    )
+    return is_dcatapes_application_profile
+
+def dge_has_guid(dataset_dict):
+    '''
+    :param dataset_dict: dataset dict
+    
+    Return True if the package has a GUID in its extras; otherwise, return False.
+    :rtype: bool
+    '''
+    has_guid = any(
+        key[0] == ds_constants.EXTRAS
+        and key[2] == ds_constants.KEY
+        and value == ds_constants.GUID_KEY
+        for key, value in dataset_dict.items()
+        if isinstance(key, tuple) and len(key) == 3
+    )
+    return has_guid
 
 def dge_is_datosgobes_theme_uri(theme_uri):
     '''

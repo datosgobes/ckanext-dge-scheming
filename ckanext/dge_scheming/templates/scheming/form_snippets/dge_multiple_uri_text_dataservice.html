@@ -1,0 +1,168 @@
+{% import 'macros/form.html' as form %}
+
+{% set group_error = errors.get(field.field_name) %}
+
+<div class="multi-new-value multi-new-value-{{field.field_name}}" id="multi-value-{{field.field_name}}">
+   <div class="field-title">
+      <label class="control-label">{{ h.scheming_language_text(field.label) }}
+         {% if h.scheming_field_required(field) or h.dge_multiple_uri_field_one_required(field, 1) %}<span class="control-required">*</span>{% endif %}
+         {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+      </label>
+   </div>
+   
+   {% set vars = {'stored': False, 'formulary': False, 'indice': 1} %}
+   
+   {%- for valor in data | sort -%}
+        {% if valor.startswith( field.field_name + '-' ) and data.get(valor) %}
+           {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+           {% if vars.indice == 1 and group_error and not field_error %}
+              {% set field_error = group_error %}
+           {% endif %}
+           <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}">
+              {{
+                form.input(
+                   field.field_name + '-' ~ vars.indice,
+                   id='field-' + field.field_name + '-' ~ vars.indice,
+                   label=h.scheming_language_text(field.label) + ' ' ~ vars.indice,
+                   placeholder=h.scheming_language_text(field.form_placeholder),
+                   value=data.get(valor),
+                   error=field_error,
+                   classes=['control-medium', 'div-'+field.field_name],
+                   attrs=field.form_attrs if 'form_attrs' in field else {},
+                   is_required=h.dge_multiple_uri_field_one_required(field, vars.indice)
+                )
+              }}
+              {% if vars.indice > 1 %}
+                 <button type="button" class="btn btn-danger btn-remove-field" onclick="removeField_{{field.field_name}}('wrapper-{{field.field_name}}-{{vars.indice}}')" title="{% trans %}Remove{% endtrans %}">
+                    <i class="fa fa-trash"></i>
+                 </button>
+              {% endif %}
+           </div>
+           {% if vars.update({'formulary': True}) %} {% endif %}
+           {% if vars.update({'indice': vars.indice + 1}) %} {% endif %}
+        {% endif %}
+   {%- endfor -%}
+   
+   {% if not vars.formulary %}
+      {%- if field.unique -%}
+         {%- set element = data.get(field.field_name, [])[0] -%}
+         {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+         {% if vars.indice == 1 and group_error and not field_error %}
+            {% set field_error = group_error %}
+         {% endif %}
+         <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}">
+            {{ form.input(
+               field.field_name + '-' ~ vars.indice,
+               id='field-' + field.field_name + '-' ~ vars.indice,
+               label=h.scheming_language_text(field.label),
+               placeholder=h.scheming_language_text(field.form_placeholder),
+               value=element,
+               error=field_error,
+               classes=['control-medium', 'div-'+field.field_name],
+               attrs=field.form_attrs if 'form_attrs' in field else {},
+               is_required=h.dge_multiple_uri_field_one_required(field, vars.indice)
+            ) }}
+         </div>
+      {%- else -%}
+         {%- set values = data.get(field.field_name, []) -%}
+         {%- for element in values -%}
+            {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+            {% if vars.indice == 1 and group_error and not field_error %}
+               {% set field_error = group_error %}
+            {% endif %}
+            <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}">
+               {{ form.input(
+                  field.field_name + '-' ~ vars.indice,
+                  id='field-' + field.field_name + '-' ~ vars.indice,
+                  label=h.scheming_language_text(field.label) + ' ' ~ vars.indice,
+                  placeholder=h.scheming_language_text(field.form_placeholder),
+                  value=element,
+                  error=field_error,
+                  classes=['control-medium', 'div-'+field.field_name],
+                  attrs=field.form_attrs if 'form_attrs' in field else {},
+                  is_required=h.dge_multiple_uri_field_one_required(field, vars.indice)
+               ) }}
+               {% if vars.indice > 1 %}
+                  <button type="button" class="btn btn-danger btn-remove-field" onclick="removeField_{{field.field_name}}('wrapper-{{field.field_name}}-{{vars.indice}}')" title="{% trans %}Remove{% endtrans %}">
+                     <i class="fa fa-trash"></i>
+                  </button>
+               {% endif %}
+            </div>
+            {% if vars.update({'indice': vars.indice + 1}) %} {% endif %}
+         {%- endfor -%}
+      {%- endif -%}
+   {% endif %}
+   
+   {%- if not field.unique -%}
+      {%- if vars.indice == 1 -%}
+         {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+         {% if vars.indice == 1 and group_error and not field_error %}
+            {% set field_error = group_error %}
+         {% endif %}
+         <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}">
+            {{ form.input(
+               field.field_name + '-' ~ vars.indice,
+               id='field-' + field.field_name + '-' ~ vars.indice,
+               label=h.scheming_language_text(field.label) + ' ' ~ vars.indice,
+               placeholder=h.scheming_language_text(field.form_placeholder),
+               value='',
+               error=field_error if vars.indice == 1 else '',
+               classes=['control-medium', 'div-'+field.field_name],
+               attrs=field.form_attrs if 'form_attrs' in field else {},
+               is_required=h.dge_multiple_uri_field_one_required(field, vars.indice)
+            ) }}
+         </div>
+      {%- endif -%}
+
+      <div id="multi-value-{{field.field_name}}-link" class="multi-add-field control-group">
+         <div class="controls">
+            <button class="btn btn-secondary btn-add-multiple-field" type="button" onclick="addNewField_{{field.field_name}}();">
+               {% trans %}Add field{% endtrans %} {{h.scheming_language_text(field.label)}}
+            </button>
+         </div>
+      </div>
+   {%- endif -%}
+
+   <script>
+       function addNewField_{{field.field_name}}(){
+          if(window.jQuery) {
+             // Buscar todos los wrappers, no solo los div-{{field.field_name}}
+             var wrappers = $("#multi-value-{{field.field_name}} .url-field-wrapper");
+             var last_wrapper = wrappers.last();
+             var input = last_wrapper.find("input").last();
+             var name_attr = input.attr('name');
+             
+             // Extraer el número del nombre del campo
+             var num_input = 1;
+             if (name_attr) {
+                var match = name_attr.match(/-(\d+)$/);
+                if (match) {
+                   num_input = parseInt(match[1]) + 1;
+                }
+             }
+             
+             var placeholder = input.attr('placeholder') || '';
+             
+             var html = '<div class="url-field-wrapper" id="wrapper-{{field.field_name}}-'+num_input+'">' +
+                '<div class="control-group control-medium div-{{field.field_name}}">' +
+                   '<label class="control-label" for="field-{{field.field_name}}-'+num_input+'">{{h.scheming_language_text(field.label)}} '+num_input+'</label>' +
+                   '<div class="controls">' +
+                      '<input id="field-{{field.field_name}}-'+num_input+'" type="text" name="{{field.field_name}}-'+num_input+'" value="" placeholder="'+placeholder+'" class="form-control">' +
+                   '</div>' +
+                '</div>' +
+                '<button type="button" class="btn btn-danger btn-remove-field" onclick="removeField_{{field.field_name}}(\'wrapper-{{field.field_name}}-'+num_input+'\')" title="{% trans %}Remove{% endtrans %}">' +
+                   '<i class="fa fa-trash"></i>' +
+                '</button>' +
+             '</div>';
+             
+             $("#multi-value-{{field.field_name}}-link").before(html);
+          }
+       }
+       
+       function removeField_{{field.field_name}}(wrapperId){
+          if(window.jQuery) {
+             $("#" + wrapperId).remove();
+          }
+       }
+  </script>
+</div>

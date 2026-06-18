@@ -1,0 +1,45 @@
+{% import 'macros/form.html' as form %}
+
+{# ========= Label con deprecated ========= #}
+{% set deprecated_text = ' (' ~ h.scheming_language_text(field.deprecated_label, h.lang()) ~ ')' if field.get('deprecated_label') else None %}
+{% set base_label = h.scheming_language_text(field.label) %}
+{% set full_label = base_label ~ ' ' ~ deprecated_text if deprecated_text else base_label %}
+
+<div class="dge-uri-text-container">
+
+{% call form.input_block(
+    "field-" + field.field_name,
+    label=' ',
+    error=errors[field.field_name],
+    is_required=h.scheming_field_required(field),
+    classes=['control-full'],
+) %}
+
+<label for="field-{{ field.field_name }}" class="label-container control-label">
+  {{ base_label }} <span class="deprecated-tag"> {{ deprecated_text }} </span>
+  {%- if h.scheming_field_required(field) -%}
+      <span title="{{ _('Required field') }}" class="control-required">*</span>
+  {%- endif -%}
+  {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+</label>
+
+  
+
+  <input id="field-{{ field.field_name }}"
+         type="text"
+         name="{{ field.field_name }}"
+         value="{{ data.get(field.field_name, '') }}"
+         placeholder="{{ h.scheming_language_text(field.form_placeholder) if field.form_placeholder else '' }}"
+         class="form-control"
+
+         pattern="https?://.+"
+         
+         oninvalid="this.setCustomValidity('Debe ser una URL válida (http:// o https://)')"
+         oninput="this.setCustomValidity('')"
+  />
+
+  {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+
+{% endcall %}
+
+</div>

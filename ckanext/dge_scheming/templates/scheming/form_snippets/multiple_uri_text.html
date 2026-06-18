@@ -1,8 +1,16 @@
 {% import 'macros/form.html' as form %}
 
 <div class="multi-new-value multi-new-value-{{field.field_name}}" id="multi-value-{{field.field_name}}">
+   <div class="field-title">
+      <label class="control-label">{{ h.scheming_language_text(field.label) }}</label>
+      {% if h.scheming_field_required(field) %}<span class="control-required">*</span>{% endif %}
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+   </div>
    {% set vars = {'stored': False, 'formulary': False, 'indice': 1} %}
-
+   {# %- snippet 'scheming/form_snippets/dge_help_popover.html', field=field % #}
+   {#
+     Se recorren los valores del formulario para ver si ya hay elementos
+   #}
    {%- for valor in data | sort -%}
         {% if valor.startswith( field.field_name + '-' ) and data.get(valor) %}
            {{
@@ -74,9 +82,10 @@
          is_required=h.dge_multiple_uri_field_one_required(field, vars.indice)
       ) }}
       <div id="multi-value-{{field.field_name}}-link" class="multi-add-field control-group">
-         {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
+         {# %- snippet 'scheming/form_snippets/dge_help_popover.html', field=field % #}
+         {# %- snippet 'scheming/form_snippets/help_text.html', field=field % #}
          <div class="controls">
-            <button class="btn btn-secondary btn-add-multiple-field" type="button" onclick="addNewField_{{field.field_name}}();">{% trans %}Add new{% endtrans %} {{h.scheming_language_text(field.label)}}</button>
+            <button class="btn btn-secondary btn-add-multiple-field" type="button" onclick="addNewField_{{field.field_name}}();">{% trans %}Add{% endtrans %} {{h.scheming_language_text(field.label)}}</button>
          </div>
       </div>
    {%- endif -%}

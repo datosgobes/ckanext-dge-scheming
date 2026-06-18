@@ -1,0 +1,116 @@
+{% import 'macros/form.html' as form %}
+
+{%- set current_lang = request.environ.CKAN_LANG -%}
+{%- set dataset_id = request.view_args.get('id') -%}
+{%- set distribution_available_dataservices = h.dge_get_distribution_available_dataservices(dataset_id, current_lang) -%}
+{%- set new_dataservice_form_url = h.url_for('dgeDataservice.add_dataservice', _external=False) -%}
+
+
+{% macro help_text() %}
+  {%- snippet 'scheming/form_snippets/dge_help_popover.html', 
+    field=field,
+    extra_help_url=new_dataservice_form_url,
+    extra_help_label=_('Create dataservice') -%}
+{% endmacro %}
+
+{# ========= Label con popover ========= #}
+{% set deprecated_text = ' (' ~ h.scheming_language_text(field.deprecated_label, h.lang()) ~ ')' if field.get('deprecated_label') else None %}
+{% set base_label = h.scheming_language_text(field.label) %}
+{# % set popover %}{% snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}{% endset % #}
+{% set popover %}{{ help_text() }}{% endset %}
+{% set full_label = base_label ~ popover if popover else base_label %}
+
+
+
+{%- if distribution_available_dataservices -%}
+
+    {%- call form.input_block(
+        "field-" + field.field_name,
+        label=' ',
+        classes=(field.classes if 'classes' in field else ['control-full']) + ['multiple-select-spatial'],
+        error=errors[field.field_name],
+        is_required=h.scheming_field_required(field),
+        ) -%}
+
+    <label for="field-{{ field.field_name }}" class="label-container control-label">
+        {{ full_label }}
+        {% if deprecated_text %}
+            <span class="deprecated-tag"> {{ deprecated_text }} </span>
+        {% endif %}
+        {%- if h.scheming_field_required(field) -%}
+            <span title="{{ _('Required field') }}" class="control-required">*</span>
+        {%- endif -%}
+    </label>
+
+    
+    {%- set choices = [] -%}
+    {%- for c in distribution_available_dataservices -%}
+        {%- do choices.append((c.value, c.title)) -%}
+    {%- endfor -%}
+    
+    {%- set field_data = h.dge_load_json_list(data[field.field_name]) -%}
+
+    {%- set selected_choices = [] -%}
+    {%- if field_data is string -%}
+        {%- do selected_choices.append(field_data) -%}
+    {%- elif field_data is iterable and field_data is not string -%}
+        {%- for v in field_data -%}
+        {%- do selected_choices.append(v) -%}
+        {%- endfor -%}
+    {%- endif -%}
+
+    <div class="multi-select" data-component="multi-select">
+
+    <div class="multi-select__trigger">
+        <div class="multi-select__chips"></div>
+
+        <span class="multi-select__placeholder">
+        {{ _("Select...") }}
+        </span>
+
+        <span class="multi-select__arrow">
+            <span class="arrow-down"><img src="/images/blue-arrow.svg" alt=""></span>
+            <span class="arrow-up"><img src="/images/blue-arrow-up.svg" alt=""></span>
+        </span>
+    </div>
+
+    <ul class="multi-select__dropdown">
+        {%- for val, label in choices -%}
+        <li
+            class="multi-select__option {{ 'is-selected' if val in selected_choices }}"
+            data-value="{{ val }}">
+            {{ label }}
+        </li>
+        {%- endfor -%}
+    </ul>
+
+    <select
+        multiple
+        size="{{ ([field.get('select_size', 10), choices|length]|sort)[0] }}"
+        id="field-{{ field.field_name }}"
+        name="{{ field.field_name }}"
+        class="multi-select__native"
+        {{ form.attributes(dict({"class": "form-control"}, **field.get('form_select_attrs', {}))) }}>
+
+        {%- for val, label in choices -%}
+        <option
+            value="{{ val }}"
+            {{ "selected" if val in selected_choices }}>
+            {{ label }}
+        </option>
+        {%- endfor -%}
+
+    </select>
+
+    </div>
+
+    {%- endcall -%}
+{%- else -%}
+    <div class="control-group">
+        <label class="control-label" for="field-access_service">{{ full_label }}</label>
+    </div>
+    <div class="controls">
+        {{ _('There are still no data services available to link') + '. ' }}
+        <a href="{{ new_dataservice_form_url }}" target="_blank">{{ _("Why don't you add one?") }}</a>
+    </div>
+{%- endif -%}

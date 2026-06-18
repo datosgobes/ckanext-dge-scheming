@@ -1,0 +1,145 @@
+{% import 'macros/form.html' as form %}
+
+{% asset 'dge/dge-multiple-uri-text-js' %}
+
+{# ========= Label con deprecated ========= #}
+{% set deprecated_text = ' (' ~ h.scheming_language_text(field.deprecated_label, h.lang()) ~ ')' if field.get('deprecated_label') else None %}
+{% set base_label = h.scheming_language_text(field.label) %}
+{% set full_label = base_label ~ ' ' ~ deprecated_text if deprecated_text else base_label %}
+{% set label_text = full_label %}
+{% set placeholder_text = h.scheming_language_text(field.form_placeholder) if field.form_placeholder else '' %}
+{% set group_error = errors.get(field.field_name) %}
+
+<div class="multi-new-value multi-new-value-{{field.field_name}} dge-multiple-uri-text" 
+     id="multi-value-{{field.field_name}}" 
+     data-field-name="{{field.field_name}}"
+     data-label="{{ label_text|replace('"', '&quot;') }}"
+     data-placeholder="{{ placeholder_text|replace('"', '&quot;') }}"
+     data-module="dge-multiple-uri-text">
+   
+   {% set vars = {'formulary': False, 'indice': 1} %}
+
+   <label class="control-label" for="field-{{field.field_name}}-{{vars.indice}}">
+      {{ base_label }} <span class="deprecated-tag"> {{ deprecated_text }} </span>
+      {%- if h.scheming_field_required(field) -%}
+         <span title="{{ _('Required field') }}" class="control-required">*</span>
+      {%- endif -%}
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field %}
+   </label>
+   
+   {# =========================
+      Valores enviados en formulario (POST)
+   ========================= #}
+   {%- for valor in data | sort -%}
+      {% if valor.startswith(field.field_name + '-') and data.get(valor) %}
+         {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+         {% if vars.indice == 1 and group_error and not field_error %}
+            {% set field_error = group_error %}
+         {% endif %}
+         <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}" data-index="{{vars.indice}}">
+            <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+               <div class="controls">
+                  <input 
+                     id="field-{{field.field_name}}-{{vars.indice}}" 
+                     type="text" 
+                     name="{{field.field_name}}-{{vars.indice}}" 
+                     value="{{data.get(valor)}}" 
+                     placeholder="{{placeholder_text}}"
+                     class="form-control"
+                  />
+                  {% if field_error %}
+                     <span class="help-inline">{{ field_error|join(', ') }}</span>
+                  {% endif %}
+               </div>
+            </div>
+            {% if vars.indice > 1 %}
+               <button type="button" class="btn btn-danger btn-remove-field" data-wrapper-id="wrapper-{{field.field_name}}-{{vars.indice}}" title="{% trans %}Remove{% endtrans %}">
+                  <i class="fa fa-trash"></i>
+               </button>
+            {% endif %}
+         </div>
+         {% if vars.update({'formulary': True}) %} {% endif %}
+         {% if vars.update({'indice': vars.indice + 1}) %} {% endif %}
+      {% endif %}
+   {%- endfor -%}
+   
+   {# =========================
+      Valores existentes en edición (GET)
+   ========================= #}
+   {% if not vars.formulary %}
+      {%- set values = data.get(field.field_name, []) -%}
+      {%- if values and values is iterable and values is not string -%}
+         {%- for element in values -%}
+            {%- if element -%}
+               {% set field_error = errors.get(field.field_name + '-' + vars.indice|string) %}
+               {% if vars.indice == 1 and group_error and not field_error %}
+                  {% set field_error = group_error %}
+               {% endif %}
+               <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-{{vars.indice}}" data-index="{{vars.indice}}">
+                  <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+                     <div class="controls">
+                        <input 
+                           id="field-{{field.field_name}}-{{vars.indice}}" 
+                           type="text" 
+                           name="{{field.field_name}}-{{vars.indice}}" 
+                           value="{{element}}" 
+                           placeholder="{{placeholder_text}}"
+                           class="form-control"
+                        />
+                        {% if field_error %}
+                           <span class="help-inline">{{ field_error|join(', ') }}</span>
+                        {% endif %}
+                     </div>
+                  </div>
+                  {% if vars.indice > 1 %}
+                     <button type="button" class="btn btn-danger btn-remove-field" data-wrapper-id="wrapper-{{field.field_name}}-{{vars.indice}}" title="{% trans %}Remove{% endtrans %}">
+                        <i class="fa fa-trash"></i>
+                     </button>
+                  {% endif %}
+               </div>
+               {% if vars.update({'indice': vars.indice + 1}) %} {% endif %}
+            {%- endif -%}
+         {%- endfor -%}
+      {%- endif -%}
+   {% endif %}
+   
+   {# =========================
+      SI NO HAY NINGÚN VALOR, MOSTRAR EL PRIMERO VACÍO
+   ========================= #}
+   {% if vars.indice == 1 %}
+      {% set field_error = errors.get(field.field_name + '-1') %}
+      {% if group_error and not field_error %}
+         {% set field_error = group_error %}
+      {% endif %}
+      <div class="url-field-wrapper" id="wrapper-{{field.field_name}}-1" data-index="1">
+         <div class="control-group control-medium div-{{field.field_name}} {% if field_error %}error{% endif %}">
+            <div class="controls">
+               <input 
+                  id="field-{{field.field_name}}-1" 
+                  type="text" 
+                  name="{{field.field_name}}-1" 
+                  value="" 
+                  placeholder="{{placeholder_text}}"
+                  class="form-control"
+               />
+               {% if field_error %}
+                  <span class="help-inline">{{ field_error|join(', ') }}</span>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+      {% if vars.update({'indice': 2}) %} {% endif %}
+   {% endif %}
+   
+   {# =========================
+      Botón añadir
+   ========================= #}
+   <div id="multi-value-{{field.field_name}}-link" class="multi-add-field control-group">
+      {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
+      <div class="controls">
+         <button type="button" class="btn btn-secondary btn-add-multiple-field" data-next-index="{{vars.indice}}">
+            <!--<i class="fa fa-plus"></i>--> {{ _('Add field') }} {{ base_label }}
+         </button>
+      </div>
+   </div>
+</div>

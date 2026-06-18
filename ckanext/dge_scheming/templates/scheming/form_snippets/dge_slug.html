@@ -1,46 +1,44 @@
-{% import 'macros/form.html' as form %}
+{% import 'macros/form.html' as form %} {#
+========================================================= Endpoint según versión
+de CKAN ========================================================= #} {% set
+read_endpoint = '.read' if h.ckan_version() > '2.9' else '_read' %} {#
+========================================================= Determinar controlador
+según tipo de entidad =========================================================
+#} {% if entity_type == 'dataset' or entity_type == 'dataservice' %} {% set
+controller = 'package' %} {% elif entity_type == 'organization' %} {% set
+controller = 'organization' %} {% elif entity_type == 'group' %} {% set
+controller = 'group' %} {% endif %} {#
+========================================================= Placeholder del módulo
+========================================================= #} {% set
+module_placeholder = '<' + object_type + '>' %} {#
+========================================================= Construcción del
+prefijo de URL ========================================================= #} {%
+set prefix = h.url_for(object_type + read_endpoint, id='') %} {% set domain =
+h.url_for(object_type + read_endpoint, id='', qualified=true) %} {% set domain =
+domain |replace("http://", "") |replace("https://", "") %} {#
+========================================================= Reconstruir URL visual
+desde slug almacenado Ejemplo: es-catalogo-2444 → /es/catalogo/2444
+========================================================= #} {% if
+data[field.field_name] %} {% set parts = data[field.field_name].split("-") %} {%
+set dir3 = parts[0] %} {% set value = parts[1:] | join('/') %} {% set prefix =
+prefix + dir3 + "/" %} {% set domain = domain + dir3 + "/" %} {% else %} {% set
+value = data[field.field_name] %} {% endif %} {#
+========================================================= Atributos del módulo
+JS ========================================================= #} {% set attrs = {
+'data-module': 'slug-preview-slug', 'data-module-prefix': domain,
+'data-module-placeholder': module_placeholder } %} {#
+========================================================= Campo de formulario
+========================================================= #} {{ form.prepend(
+field.field_name, id='field-' + field.field_name,
+label=h.scheming_language_text(field.label), prepend=prefix,
+placeholder=h.scheming_language_text(field.form_placeholder), value=value,
+error=errors[field.field_name], attrs=attrs,
+is_required=h.scheming_field_required(field) ) }} {#
+========================================================= Tooltip de ayuda
+========================================================= #}
 
-{% set read_endpoint = '.read' if h.ckan_version() > '2.9' else '_read' %}
-
-{%- if entity_type == 'dataset' or entity_type == 'dataservice' %}
-    {%- set controller = 'package' -%}
-{%- elif entity_type == 'organization' %}
-    {%- set controller = 'organization' -%}
-{%- elif entity_type == 'group' -%}
-    {%- set controller = 'group' -%}
-{%- endif -%}
-
-{%- set module_placeholder = '<' + object_type + '>' -%}
-
-{%- set prefix = h.url_for(object_type + read_endpoint, id='') -%}
-{%- set domain = h.url_for(object_type + read_endpoint, id='', qualified=true) -%}
-{%- set domain = domain|replace("http://", "")|replace("https://", "") -%}
-
-{%- if data[field.field_name] %}
-    {%- set dir3 = data[field.field_name].split("-",1)[0] -%}
-    {%- set value = data[field.field_name].split("-",1)[1] -%}
-    {%- set prefix = prefix + dir3 + "-" -%}
-    {%- set domain = domain + dir3 + "-" -%}
-{%- else %}
-    {%- set value = data[field.field_name] -%}
-{%- endif -%}
-
-{%- set attrs = {
-    'data-module': 'slug-preview-slug',
-    'data-module-prefix': domain,
-    'data-module-placeholder': module_placeholder } -%}
-{{ form.prepend(
-    field.field_name,
-    id='field-' + field.field_name,
-    label=h.scheming_language_text(field.label),
-    prepend=prefix,
-    placeholder=h.scheming_language_text(field.form_placeholder),
-    value=value,
-    error=errors[field.field_name],
-    attrs=attrs,
-    is_required=h.scheming_field_required(field)
-    ) }}
 <div class="tooltip-custom">
-<div class="tooltip-margin"></div>    
-{%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+  <div class="tooltip-margin"></div>
+
+  {% snippet 'scheming/form_snippets/help_text.html', field=field %}
 </div>

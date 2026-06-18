@@ -1,0 +1,125 @@
+{% import 'macros/form.html' as form %}
+{% set date = data.get(field.field_name + '_date') %}
+{% set time = data.get(field.field_name + '_time') %}
+
+{% if not date is string and not time is string %}
+    {% set date = data.get(field.field_name) %}
+    {% if date %}
+        {% set parts = data.get(field.field_name).split('T') %}
+        {% set date = parts[0] %}
+        {% set time = parts[1] %}
+    {% endif %}
+    {% if not date %}
+        {% set date = '' %}
+    {% endif %}
+    {% if not time %}
+        {% set time = '' %}
+    {% endif %}
+{% endif %}
+
+{% set error_msg = h.scheming_language_text(field.validation_error) %}
+{% set label_text = h.scheming_language_text(field.label, h.lang()) %}
+
+<div class="div-{{field.field_name}} control-group" id="div-{{field.field_name}}" data-field-type="modified">
+   
+   {# Label explícito con popover al lado #}
+   <div class="control-label-wrapper" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+      <label class="control-label" for="field-{{field.field_name}}-date" style="margin-bottom: 0;">
+         {{ label_text }}
+         {%- if h.scheming_field_required(field) -%}
+            <span title="{{ _('Required field') }}" class="control-required">*</span>
+         {%- endif -%}
+      </label>
+      {%- snippet 'scheming/form_snippets/dge_help_popover.html', field=field -%}
+   </div>
+   
+   {% set aux_errors = [] %}
+   {% if errors[field.field_name + '_date'] %}
+      {% set aux_errors = errors[field.field_name + '_date'] %}
+   {% endif %}
+   {% if errors[field.field_name + '_time'] %}
+      {% set aux_errors = aux_errors + errors[field.field_name + '_time'] %}
+   {% endif %}
+   
+   <div class="controls div-date">
+      {% if aux_errors %}
+         <span class="error-block">{{ aux_errors | join(', ') }}</span>
+      {% endif %}
+      
+      <input id="field-{{field.field_name}}-date" type="date" name="{{ field.field_name + '_date' }}" value="{{ date }}" class="input-medium text--transform_uppercase dge-date-input" placeholder="AAAA/MM/DD" data-pair="issued" />
+      <input id="field-{{field.field_name}}-time" type="time" name="{{ field.field_name + '_time' }}" value="{{ time }}" class="input-small dge-time-input" placeholder="hh:mm" data-pair="issued" />
+      
+      {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+   </div>
+   
+   {# Mensaje de error debajo #}
+   <div class="dge-date-error-wrapper" style="display: none; color: #c14531; font-size: 12px; margin-top: 5px; clear: both;">
+       {{ error_msg }}
+   </div>
+</div>
+
+<script>
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        validateDgeDates();
+    });
+    
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(validateDgeDates, 1);
+    }
+    
+    function validateDgeDates() {
+        const container = document.querySelector('#div-{{field.field_name}}');
+        const issuedDate = document.querySelector('#field-issued_date-date');
+        const issuedTime = document.querySelector('#field-issued_date-time');
+        const modifiedDate = document.querySelector('#field-modified_date-date');
+        const modifiedTime = document.querySelector('#field-modified_date-time');
+        const errorDiv = container.querySelector('.dge-date-error-wrapper');
+        
+        if (!issuedDate || !modifiedDate) return;
+        
+        const errorMsg = {{ error_msg|tojson }};
+        
+        function checkDates() {
+            if (!issuedDate.value || !modifiedDate.value) {
+                if (errorDiv) errorDiv.style.display = 'none';
+                modifiedDate.setCustomValidity('');
+                return true;
+            }
+            
+            const iTime = issuedTime?.value || '00:00';
+            const mTime = modifiedTime?.value || '00:00';
+            
+            const issued = new Date(issuedDate.value + 'T' + iTime);
+            const modified = new Date(modifiedDate.value + 'T' + mTime);
+            
+            if (modified < issued) {
+                if (errorDiv) errorDiv.style.display = 'block';
+                modifiedDate.setCustomValidity(errorMsg);
+                return false;
+            } else {
+                if (errorDiv) errorDiv.style.display = 'none';
+                modifiedDate.setCustomValidity('');
+                return true;
+            }
+        }
+        
+        [issuedDate, issuedTime, modifiedDate, modifiedTime].forEach(function(el) {
+            if (el) el.addEventListener('change', checkDates);
+        });
+        
+        checkDates();
+        
+        const form = modifiedDate.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!checkDates()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modifiedDate.focus();
+                }
+            });
+        }
+    }
+})();
+</script>

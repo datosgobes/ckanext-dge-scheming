@@ -16,10 +16,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import ckan.lib.plugins as lib_plugins
 import ckan.lib.helpers as h
 import ckanext.scheming.helpers as sh
+import ckanext.dge_scheming
 
 from ckanext.dge_scheming import validators, helpers
 from ckantoolkit import (
@@ -28,12 +31,13 @@ from ckantoolkit import (
 
 log = logging.getLogger(__name__)
 
-class DgeSchemingPlugin(plugins.SingletonPlugin):
+class DgeSchemingPlugin(plugins.SingletonPlugin, lib_plugins.DefaultTranslation):
     plugins.implements(plugins.IConfigurer, inherit=True)
     plugins.implements(plugins.IValidators, inherit=True)
     plugins.implements(plugins.ITemplateHelpers, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IResourceController, inherit=True)
+    plugins.implements(plugins.ITranslation, inherit=True)
 
     # #########################################################################
     # #########################################################################
@@ -67,12 +71,15 @@ class DgeSchemingPlugin(plugins.SingletonPlugin):
             'url_encode': validators.url_encode,
             'multiple_url_encode': validators.multiple_url_encode,
             'at_least_one_required': validators.at_least_one_required,
-            'format_to_media_type': validators.format_to_media_type,
+            'format_validator': validators.format_validator,
             'multilanguage_tags': validators.multilanguage_tags,
             'multiple_theme_choice': validators.multiple_theme_choice,
             'allow_empty_scheming_isodatetime': validators.allow_empty_scheming_isodatetime,
             'multiple_select_spatial': validators.multiple_select_spatial,
-            'dge_scheming_multiple_text': validators.dge_scheming_multiple_text
+            'dge_scheming_multiple_text': validators.dge_scheming_multiple_text,
+            'multiple_checkbox_language': validators.multiple_checkbox_language,
+            'dge_visibility_to_private': validators.dge_visibility_to_private,
+            'dge_private_to_visibility': validators.dge_private_to_visibility
             #'multiple_select_dataservice': validators.multiple_select_dataservice
             }
 
@@ -107,6 +114,9 @@ class DgeSchemingPlugin(plugins.SingletonPlugin):
     # #########################################################################
     # #########################################################################
     # CKAN < 2.10 hooks
+    def edit(self, entity):
+        helpers.dge_sync_served_by_dataservice_for_manual_package(entity)
+
     def after_update(self, context, data_dict):
         helpers.dge_dataset_license_to_distributions_license(context, data_dict)
         
@@ -120,5 +130,15 @@ class DgeSchemingPlugin(plugins.SingletonPlugin):
         
     def after_create(self, context, resource):
         return
-    
-    
+
+    # #########################################################################
+    # #########################################################################
+    # ITranslation
+    # #########################################################################
+    # #########################################################################
+    def i18n_directory(self):
+        u'''Change the directory of the .mo translation files'''
+        return os.path.join(
+            os.path.dirname(ckanext.dge_scheming.__file__),
+            'i18n'
+        )

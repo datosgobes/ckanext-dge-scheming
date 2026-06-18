@@ -32,6 +32,7 @@ import ckan.model as model
 import ckan.plugins.toolkit as toolkit
 import ckanext.dge_scheming.helpers as dh
 import ckanext.dge_scheming.constants as ds_constants
+from ckanext.dge.helpers import dge_get_format_from_vocabulary_uri
 from dateutil.parser import parse as parse_date
 from ckan.logic.validators import tag_string_convert
 from ckan.plugins.toolkit import missing, Invalid, StopOnError, _
@@ -78,6 +79,14 @@ def scheming_validator(fn):
 FIELD TYPE URL
 """
 
+def url_from_access_url(data,key):
+    if len(key) == 3 and key[0] == ds_constants.RESOURCE_KEY and key[2] == ds_constants.URL_KEY:
+        url_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.URL_KEY)
+        if key == url_key:
+            access_url_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.ACCESS_URL_KEY)
+            resource_access_url = data[access_url_key]
+            if resource_access_url:
+                data[key] = json.loads(resource_access_url)[0]
 
 @scheming_validator
 def uri_text(field, schema):
@@ -86,7 +95,10 @@ def uri_text(field, schema):
     header = '[uri_text VALIDATOR]'
     def validator(key, data, errors, context):
         log.debug('{} validating. Key: {} required: {}'.format(header, key, required))
-                
+        
+        # For web form submissions (not harvesting), store first dcat:accessURL in resource URL
+        if not dh.dge_has_guid(data):
+            url_from_access_url(data,key)
         value = data[key]
     
         is_url = False
@@ -96,10 +108,10 @@ def uri_text(field, schema):
         if value is not missing:
             if value:
                 if is_url and not dh.dge_is_url(value):
-                    errors[key].append(_('the URL format is not valid'))
+                    errors[key].append(_('The URL format is not valid'))
                 else:
                     if not is_url and not dh.dge_is_uri(value):
-                        errors[key].append(_('the URI format is not valid'))
+                        errors[key].append(_('The URI format is not valid'))
                         
                 if key == ds_constants.LICENSE_KEY:
                     data[ds_constants.DATASET_LICENSE_TMP] = value
@@ -112,10 +124,10 @@ def uri_text(field, schema):
             value = extras[key]
 
             if is_url and not dh.dge_is_url(value):
-                errors[key].append(_('the URL format is not valid'))
+                errors[key].append(_('The URL format is not valid'))
             else:
                 if not is_url and not dh.dge_is_uri(value):
-                    errors[key].append(_('the URI format is not valid'))
+                    errors[key].append(_('The URI format is not valid'))
             return
         
         if len(key) == 3 and key[0] == ds_constants.RESOURCE_KEY:
@@ -125,7 +137,8 @@ def uri_text(field, schema):
                     dataset_license_tmp = data[ds_constants.DATASET_LICENSE_TMP]
                     data[resource_license_key] = dataset_license_tmp
 
-        if required or (nti_required and not dh.dge_is_dcatapes_application_profile(data)):
+        # In DCAT-AP-ES 1.0.0 dataset's dct:license is obsolete, but mandatory in NTI-RISP
+        if required or (nti_required and dh.dge_has_guid(data) and not dh.dge_is_dcatapes_application_profile(data)):
             not_empty(key, data, errors, context)
         else:
             ignore_missing(key, data, errors, context)
@@ -166,15 +179,8 @@ def multiple_uri_text(field, schema):
         if errors[key]:
             return
         
-        is_dcatapes = dh.dge_is_dcatapes_application_profile(data) if key == ds_constants.IDENTIFIER_KEY else False
-               
-        if len(key) == 3 and key[0] == ds_constants.RESOURCE_KEY:
-            access_url_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.ACCESS_URL_KEY)
-            if key == access_url_key:
-                url_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.URL_KEY)
-                resource_url = data[url_key]
-                if resource_url:
-                    data[key] = [resource_url]
+        # Checking if dataset is dcatapes when dct:identifier is being validated (harvesting and web form)
+        is_dcatapes = (not dh.dge_has_guid(data) or dh.dge_is_dcatapes_application_profile(data)) if key == ds_constants.IDENTIFIER_KEY else False
         
         value = data[key]
 
@@ -289,7 +295,7 @@ def multiple_uri_text(field, schema):
 
 
 def multiple_uri_text_output(value):
-    """
+    """ 
     Return stored json representation as a list, if
     value is already a list just pass it through.
     """
@@ -301,6 +307,47 @@ def multiple_uri_text_output(value):
         return json.loads(value)
     except ValueError:
         return [value]
+
+
+"""
+FIELD TYPE LANGUAGE
+"""
+@scheming_validator
+def multiple_checkbox_language(field, schema):
+    header = '[multiple_checkbox_language VALIDATOR]'
+    def validator(key, data, errors, context):
+        required_value = field['required_value'] if 'required_value' in field else False
+        log.debug('{} validating. Key: {} required_value: {}'.format(header, key, required_value))
+
+        # just in case there was an error before that validator
+        if errors[key]:
+            return
+        
+        if not required_value:
+            required_value = config.get('ckanext.dge-scheming.required_language_value', 'http://publications.europa.eu/resource/authority/language/SPA')
+
+        value = data[key]
+
+        if value is missing:
+            ignore_missing(key, data, errors, context)
+            return
+        
+        if value is not missing:
+            if isinstance(value, str):
+                value = [value]
+            if not isinstance(value, list):
+                errors[key].append(_('Expecting list of strings'))
+                return
+
+            # If value comes from manual form or DCAT-AP-ES harvesting Spanish is mandatory
+            if not dh.dge_has_guid(data) or dh.dge_is_dcatapes_application_profile(data):
+                if required_value and not required_value in value:
+                    errors[key] = [_('It is mandatory to include Spanish if any languages are selected')]
+            
+            if not errors[key]:
+                data[key] = json.dumps(value)
+
+    return validator
 
 
 """
@@ -322,7 +369,7 @@ def date_frequency(field, schema):
 
         value = data[key]
 
-        # 1. list of strings or 2. single string
+        # 1. list of strings or 2. single string (harvester)
         if value is not missing:
             if isinstance(value, str):
                 try:
@@ -377,42 +424,27 @@ def date_frequency(field, schema):
                     data[key] = None
             return
 
-        # 3. separate fields
+        # 3. separate fields (form)
         found = {}
         prefix = key[-1] + '-'
         extras = data.get(key[:-1] + ('__extras',), {})
 
         # Form validations
-        frequency_type = extras.get(prefix + 'type')
-        frequency_value = extras.get(prefix + 'value')
+        frequency_identifier = extras.get(prefix + 'identifier')
 
-        if frequency_type and frequency_value:
-            if not frequency_type in ds_constants.FREQUENCY_VALUES:
-                errors[key] = [_('The frequency type is no allowed')]
-            try:
-                int(frequency_value)
-            except ValueError:
-                errors[key] = [_('The frequency value is not an integer')]
-        else:
-            if frequency_type and not frequency_value:
-                errors[key] = [_('The frequency value is mandatory')]
-            if frequency_value and not frequency_type:
-                errors[key] = [_('The frequency type is mandatory')]
-            if field.get('required') and not frequency_value and not frequency_type:
-                not_empty(key, data, errors, context)
+        if field.get('required') and not frequency_identifier:
+            not_empty(key, data, errors, context)            
 
         # With errors we finish
         if errors[key]:
             return
 
         # transform to JSON
-        if frequency_value and frequency_type:
-            # Adding identifier
-            frequency_identifier = ''
-            frequency_identifier = dh.dge_parse_frequency_identifier(frequency_type, frequency_value)
+        if frequency_identifier:
             if not frequency_identifier in ds_constants.FREQUENCY_IDENTIFIERS:
                 frequency_identifier = ds_constants.FREQUENCY_IDENTIFIER_OTHER
-            out = {'type': frequency_type, 'value': frequency_value, 'uri': '', 'identifier': frequency_identifier}
+            uri = ds_constants.FREQUENCY_EUROPEAN_PREFIX + frequency_identifier.upper()
+            out = {'type': 'uri', 'value': -1, 'uri': uri, 'identifier': frequency_identifier}
             data[key] = json.dumps(out)
         else:
             data[key] = None
@@ -547,6 +579,56 @@ def multilanguage_url(field, schema):
 
     return validator
 
+@scheming_validator
+def dge_visibility_to_private(field, schema):
+    def validator(key, data, errors, context):
+        if errors[key]:
+            return
+
+        value = data.get(key)
+        log.debug('[dge_visibility_to_private] key=%s, value=%s', key, value)
+        
+        if value is not missing and value:
+            is_private = (value == 'privado')
+            data[('private',)] = is_private
+            log.debug('[dge_visibility_to_private] Set private=%s', is_private)
+            
+            # NO ELIMINAR data[key] - dejar que CKAN lo guarde en extras
+            # o asignar un valor dummy si no quieres el original
+            data[key] = value  # Mantener el valor para convert_to_extras
+            
+        else:
+            data[('private',)] = False
+
+    return validator
+
+@scheming_validator  
+def dge_private_to_visibility(field, schema):
+    """
+    (Opcional) Input validator para poblar visibilidad desde private al cargar el formulario.
+    Útil si quieres que el formulario muestre el valor guardado al editar.
+    """
+    def validator(key, data, errors, context):
+        # Solo actuar si no hay valor ya puesto
+        if data.get(key) not in (missing, None, ''):
+            return
+            
+        # Obtener el valor de private
+        private_value = data.get(('private',))
+        
+        log.debug('[dge_private_to_visibility] key %s, private=%s', key, private_value)
+        
+        if private_value is not missing:
+            # Mapear booleano a string
+            visibility = 'privado' if private_value else 'publico'
+            data[key] = visibility
+            log.debug('[dge_private_to_visibility] Set visibilidad=%s from private=%s', 
+                      visibility, private_value)
+        else:
+            # Default
+            data[key] = 'publico'
+
+    return validator
 
 """
 FIELD TYPE DATE PERIOD
@@ -1121,34 +1203,28 @@ def at_least_one_required(field, schema):
     return validator
 
 """
-RESOURCE VALIDATOR TO TRANSFORM NTI FORMAT VALUES INTO MEDIA_TYPE
+RESOURCE VALIDATOR TO TRANSFORM NTI FORMAT VALUES INTO MEDIA_TYPE IANA URI
+In DCAT-AP-ES 1.0.0 mediaType will be an IANA URI
 """
 
 @scheming_validator
-def format_to_media_type(field, schema):
-    header = '[format_to_media_type VALIDATOR]'
+def format_validator(field, schema):
+    header = '[format_validator VALIDATOR]'
     def validator(key, data, errors, context):
         """
-        Obtaining the format value and store it in extra media_type as an IANA URI if NTI Profile
+        Obtaining the format value and store it
         """
         log.debug('{} validating. Key: {}'.format(header, key))
-        
-        for data_key in data:
-            if len(data_key) == 3 and data[data_key] == ds_constants.APPLICATION_PROFILE_KEY:
-                data_key_index = data_key[1]
-                data_profile_value_key = ('extras', data_key_index, 'value')
-                if data[data_profile_value_key] == ds_constants.DCATAPES_100:
-                    break
-        
-        value = data[key]
-        if value is not missing:
-            if isinstance(value, str):
-                if len(key) == 3 and key[0] == ds_constants.RESOURCE_KEY:
-                    media_type_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.MEDIA_TYPE_KEY)
-                    if media_type_key in data:
-                        if data[media_type_key] is None or data[media_type_key] is missing:
-                            data[media_type_key] = ds_constants.FORMAT_PREFIX_EDP_IANA + value
-        
+        # If there is no guid, data source is DCAT-AP-ES web form
+        if not dh.dge_has_guid(data):
+            value = data[key]
+            if value is not missing:
+                # In DCAT-AP-ES 1.0.0 FORM, distribution format will be stored in extra resource_format as an European Vocabulary URI.
+                # Format Field will be European Vocabulary label
+                data_format_key = (ds_constants.RESOURCE_KEY, key[1], ds_constants.FORMAT_KEY)
+                if data.get(data_format_key) is None or data.get(data_format_key) is missing:
+                    label, is_iana = dge_get_format_from_vocabulary_uri(value)
+                    data[data_format_key] = label
     return validator
 
 """
@@ -1201,27 +1277,27 @@ def multilanguage_tags(field, schema):
         # 1. dict of lists of tag strings
         if value is not missing:
             if not isinstance(value, dict):
-                errors[key].append(_('expecting JSON object'))
+                errors[key].append(_('Expecting JSON object'))
                 return
 
             for lang, keys in value.items():
                 try:
                     m = re.match(BCP_47_LANGUAGE, lang)
                 except TypeError:
-                    errors[key].append(_('invalid type for language code: %r')
+                    errors[key].append(_('Invalid type for language code: %r')
                         % lang)
                     continue
                 if not m:
-                    errors[key].append(_('invalid language code: "%s"') % lang)
+                    errors[key].append(_('Invalid language code: "%s"') % lang)
                     continue
                 if not isinstance(keys, list):
-                    errors[key].append(_('invalid type for "%s" value') % lang)
+                    errors[key].append(_('Invalid type for "%s" value') % lang)
                     continue
                 out = []
                 for i, v in enumerate(keys):
                     if not isinstance(v, six.string_types):
                         errors[key].append(
-                            _('invalid type for "{lang}" value item {num}').format(
+                            _('Invalid type for "{lang}" value item {num}').format(
                                 lang=lang, num=i))
                         continue
 
@@ -1231,7 +1307,7 @@ def multilanguage_tags(field, schema):
                                 'utf-8'))
                         except UnicodeDecodeError:
                             errors[key]. append(_(
-                                'expected UTF-8 encoding for '
+                                'Expected UTF-8 encoding for '
                                 '"{lang}" value item {num}').format(
                                     lang=lang, num=i))
                     else:
@@ -1268,12 +1344,12 @@ def multilanguage_tags(field, schema):
             lang = name.split('-', 1)[1]
             m = re.match(BCP_47_LANGUAGE, lang)
             if not m:
-                errors[name] = [_('invalid language code: "%s"') % lang]
+                errors[name] = [_('Invalid language code: "%s"') % lang]
                 output = None
                 continue
 
             if not isinstance(text, six.string_types):
-                errors[name].append(_('invalid type'))
+                errors[name].append(_('Invalid type'))
                 continue
 
             if isinstance(text, str):
@@ -1281,7 +1357,7 @@ def multilanguage_tags(field, schema):
                     text = text if six.PY3 else text.decode(
                         'utf-8')
                 except UnicodeDecodeError:
-                    errors[name].append(_('expected UTF-8 encoding'))
+                    errors[name].append(_('Expected UTF-8 encoding'))
                     continue
 
             if output is not None and text:
@@ -1381,7 +1457,7 @@ def multiple_theme_choice(field, schema):
             if isinstance(value, six.string_types):
                 value = [value]
             elif not isinstance(value, list):
-                errors[key].append(_('expecting list of strings'))
+                errors[key].append(_('Expecting list of strings'))
                 return
         else:
             value = []
@@ -1406,7 +1482,7 @@ def multiple_theme_choice(field, schema):
                 if element in choice_values:
                     selected.add(element)
                     continue
-                errors[key].append(_('unexpected choice "%s"') % element)
+                errors[key].append(_('Unexpected choice "%s"') % element)
             else:
                 vocabularies_uris.append(element)
 
@@ -1573,7 +1649,7 @@ def multiple_select_spatial(field, schema):
                 if spatial_uri in spatial_choice_values:
                     selected.add(spatial_uri)
                     continue
-                errors[key].append(_('unexpected choice "%s"') % spatial_uri)
+                errors[key].append(_('Unexpected choice "%s"') % spatial_uri)
 
             if not errors[key] and len(selected) > 0:
                 if not application_profile == ds_constants.DCATAPES_100:
@@ -1675,7 +1751,7 @@ def dge_scheming_multiple_text(field, schema):
             if isinstance(value, six.string_types):
                 value = [value]
             if not isinstance(value, list):
-                errors[key].append(_('expecting list of strings'))
+                errors[key].append(_('Expecting list of strings'))
                 raise StopOnError
 
             out = []
@@ -1684,14 +1760,14 @@ def dge_scheming_multiple_text(field, schema):
                     continue
 
                 if not isinstance(element, six.string_types):
-                    errors[key].append(_('invalid type for repeating text: %r')
+                    errors[key].append(_('Invalid type for repeating text: %r')
                                        % element)
                     continue
                 if isinstance(element, six.binary_type):
                     try:
                         element = element.decode('utf-8')
                     except UnicodeDecodeError:
-                        errors[key]. append(_('invalid encoding for "%s" value')
+                        errors[key]. append(_('Invalid encoding for "%s" value')
                                             % element)
                         continue
 

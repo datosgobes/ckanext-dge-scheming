@@ -1,0 +1,268 @@
+{% import 'macros/form.html' as form %}
+
+{# ========= Config ========= #}
+{%- set langs = h.fluent_form_languages(field, entity_type, object_type, schema) -%}
+{%- set req_lang = field.get('required_language', 'es') -%}
+
+{%- set ui_lang = h.lang() -%}
+
+{%- set lang_names_by_ui = {
+    'es': {
+        'es': 'Español',
+        'en': 'Inglés',
+        'ca': 'Catalán',
+        'gl': 'Gallego',
+        'eu': 'Euskera'
+    },
+    'en': {
+        'es': 'Spanish',
+        'en': 'English',
+        'ca': 'Catalan',
+        'gl': 'Galician',
+        'eu': 'Basque'
+    },
+    'ca': {
+        'es': 'Espanyol',
+        'en': 'Anglès',
+        'ca': 'Català',
+        'gl': 'Gallec',
+        'eu': 'Basc'
+    },
+    'gl': {
+        'es': 'Español',
+        'en': 'Inglés',
+        'ca': 'Catalán',
+        'gl': 'Galego',
+        'eu': 'Éuscaro'
+    },
+    'eu': {
+        'es': 'Gaztelania',
+        'en': 'Ingelesa',
+        'ca': 'Katalana',
+        'gl': 'Galiziera',
+        'eu': 'Euskara'
+    }
+} -%}
+
+{%- set lang_names = lang_names_by_ui.get(ui_lang, lang_names_by_ui['es']) -%}
+{%- set base_label = h.scheming_language_text(field.label, ui_lang) -%}
+
+{%- set ui_type = field.get('fluent_ui', 'markdown') -%}
+
+{# Determinar si es requerido - por validators o por campo required #}
+{%- set is_required = h.scheming_field_required(field) or 'multiple_required_language' in (field.validators|default('')) -%}
+
+
+{# ========= Placeholders por idioma ========= #}
+{%- set placeholders = {} -%}
+{%- if field.fluent_form_placeholder is mapping -%}
+  {%- for l in langs -%}
+    {%- set placeholder_value = '' -%}
+    {%- if field.fluent_form_placeholder.get(l) is mapping -%}
+      {%- set placeholder_value = h.scheming_language_text(field.fluent_form_placeholder.get(l), ui_lang) -%}
+    {%- else -%}
+      {%- set placeholder_value = h.scheming_language_text(field.fluent_form_placeholder, ui_lang) -%}
+    {%- endif -%}
+    {%- set _ = placeholders.update({l: placeholder_value}) -%}
+  {%- endfor -%}
+{%- endif -%}
+
+{# ========= Valores actuales por idioma ========= #}
+{%- set current = {} -%}
+{%- for l in langs -%}
+  {%- set v = data.get(field.field_name + '-' + l) -%}
+  {%- if not v and data.get(field.field_name) and data.get(field.field_name).get(l) -%}
+    {%- set v = data.get(field.field_name).get(l) -%}
+  {%- endif -%}
+  {%- if v is not none and v != '' -%}
+    {%- set _ = current.update({l: v}) -%}
+  {%- endif -%}
+{%- endfor -%}
+
+
+<div class="fluent-multilang-field"
+     data-required-lang="{{ req_lang }}"
+     data-field-name="{{ field.field_name }}"
+     data-ui-type="{{ ui_type }}"
+     data-base-label="{{ base_label|replace('"','&quot;') }}"
+     data-lang-names='{
+       {%- for l in langs -%}
+         "{{ l }}": "{{ lang_names.get(l, l)|replace('"','\\"') }}"{% if not loop.last %},{% endif %}
+       {%- endfor -%}
+     }'
+     data-placeholders='{
+       {%- for l in langs -%}
+         "{{ l }}": "{{ placeholders.get(l, '')|replace('"','\\"') }}"{% if not loop.last %},{% endif %}
+       {%- endfor -%}
+     }'>
+
+  {# =========================================
+     1) Campo requerido (ES) + botón
+     ========================================= #}
+  <div class="fluent-header-2col">
+
+    <div class="fluent-header-left">
+      <div class="control-group fluent-vertical {% if errors.get(field.field_name + '-' + req_lang) %}error{% endif %}">
+
+        <div class="control-label-wrapper" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <label class="control-label" for="field-{{ field.field_name }}-{{ req_lang }}">
+            {{ base_label }} 
+            {%- if is_required -%}
+              <span title="{{ _('Required field') }}" class="control-required">*</span>
+            {%- endif -%}
+            <span class="label-lang">({{ lang_names.get(req_lang, req_lang) }})</span>
+          </label>
+          {%- snippet 'scheming/form_snippets/dge_help_popover.html',
+              field=field,
+              lang=req_lang -%}
+        </div>
+
+        {% if ui_type == 'text' %}
+          <div class="controls">
+            <input type="text"
+                   id="field-{{ field.field_name }}-{{ req_lang }}"
+                   name="{{ field.field_name }}-{{ req_lang }}"
+                   value="{{ data.get(field.field_name + '-' + req_lang)
+                              or (data.get(field.field_name, {}).get(req_lang) if data.get(field.field_name) else '') }}"
+                   placeholder="{{ placeholders.get(req_lang, '') }}"
+                   class="form-control control-large" />
+          </div>
+        {% else %}
+          <div class="dge-md-wrap">
+            {% call form.markdown(
+              field.field_name + '-' + req_lang,
+              id='field-' + field.field_name + '-' + req_lang,
+              label=None,
+              placeholder=placeholders.get(req_lang, ''),
+              value=data.get(field.field_name + '-' + req_lang)
+                  or (data.get(field.field_name, {}).get(req_lang) if data.get(field.field_name) else ''),
+              error=errors.get(field.field_name + '-' + req_lang),
+              attrs=field.form_attrs or {},
+              is_required=true
+            ) %}{% endcall %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <div class="fluent-header-right">
+      <button type="button" class="btn btn-secondary btn-add-multiple-field fluent-show-add-btn">
+        {{ _('Add translation') }}
+      </button>
+    </div>
+
+  </div>
+
+  {# =========================================
+     2+3) Extra (oculto al cargar): lista + alta
+     ========================================= #}
+  <div class="fluent-extra is-hidden" style="display:none; margin-top:16px;">
+
+    <div class="fluent-translations-list">
+      {%- for l in langs -%}
+        {%- if l != req_lang and current.get(l) -%}
+          <div class="fluent-translation-item" data-lang="{{ l }}">
+            <div class="control-group fluent-vertical">
+
+              <label class="control-label" for="field-{{ field.field_name }}-{{ l }}">
+                {{ base_label }} <span class="label-lang">({{ lang_names.get(l, l) }})</span>
+              </label>
+
+              {% if ui_type == 'text' %}
+                <div class="controls">
+                  <input type="text"
+                         id="field-{{ field.field_name }}-{{ l }}"
+                         name="{{ field.field_name }}-{{ l }}"
+                         value="{{ current.get(l) }}"
+                         placeholder="{{ placeholders.get(l, '') }}"
+                         class="form-control control-large" />
+                </div>
+              {% else %}
+                <div class="dge-md-wrap">
+                  {% call form.markdown(
+                    field.field_name + '-' + l,
+                    id='field-' + field.field_name + '-' + l,
+                    label=None,
+                    placeholder=placeholders.get(l, ''),
+                    value=current.get(l),
+                    error=errors.get(field.field_name + '-' + l),
+                    attrs=field.form_attrs or {},
+                    is_required=false
+                  ) %}{% endcall %}
+                </div>
+              {% endif %}
+
+            </div>
+
+            <div class="fluent-actions">
+              <button type="button" class="btn btn-danger fluent-remove-translation"><i class="fa fa-trash-o"></i></button>
+            </div>
+
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="fluent-add-translation">
+      <div class="fluent-add-row">
+
+        <div class="fluent-col-name">
+          <label class="fluent-new-label" for="fluent-new-{{ field.field_name }}"></label>
+
+          {% if ui_type == 'text' %}
+            <input type="text"
+                   id="fluent-new-{{ field.field_name }}"
+                   class="form-control control-large fluent-new-value"
+                   value="" />
+          {% else %}
+            <textarea id="fluent-new-{{ field.field_name }}"
+                      class="form-control control-medium fluent-new-value"
+                      rows="6"></textarea>
+          {% endif %}
+        </div>
+
+        <div class="fluent-col-lang">
+          <label for="fluent-lang-select-{{ field.field_name }}">{{ _('Translation language') }} *</label>
+          <select id="fluent-lang-select-{{ field.field_name }}"
+                  class="form-control fluent-lang-select">
+            {%- for l in langs -%}
+              {%- if l != req_lang and not current.get(l) -%}
+                <option value="{{ l }}">{{ lang_names.get(l, l) }}</option>
+              {%- endif -%}
+            {%- endfor -%}
+          </select>
+        </div>
+
+        <div class="fluent-col-btn">
+          <button type="button" class="btn btn-secondary fluent-add-btn btn-add-multiple-field">
+            {{ _('Add translation') }}
+          </button>
+          {# ===== BOTÓN CANCELAR ===== #}
+          <button type="button" class="btn btn-danger fluent-cancel-btn" style="margin-left: 8px;">
+            {{ _('Cancel') }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  {# Template para crear items #}
+  <script type="text/template" class="fluent-translation-template">
+    <div class="fluent-translation-item" data-lang="__LANG__">
+      <div class="control-group fluent-vertical">
+        <label class="control-label" for="field-{{ field.field_name }}-__LANG__">
+          {{ base_label }} (__LANGNAME__)
+        </label>
+        __INPUT__
+      </div>
+
+      <div class="fluent-actions">
+        <button type="button" class="btn btn-danger fluent-remove-translation"><i class="fa fa-trash-o"></i></button>
+      </div>
+    </div>
+  </script>
+
+</div>

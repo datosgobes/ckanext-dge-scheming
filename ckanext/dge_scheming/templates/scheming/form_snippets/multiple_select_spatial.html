@@ -1,0 +1,50 @@
+{%- set raw = data.get(field.field_name) -%}
+{%- if raw is string -%}
+  {%- set selected = [raw] if raw else [] -%}
+{%- elif raw is sequence and raw is not string -%}
+  {%- set selected = raw -%}
+{%- else -%}
+  {%- set selected = [] -%}
+{%- endif -%}
+
+<div class="control-group multiple-select-spatial {% if errors.get(field.field_name) %}error{% endif %}">
+  <label class="control-label" for="field-{{ field.field_name }}">
+    {{ h.scheming_language_text(field.label, h.lang()) }}
+  </label>
+
+  <div class="controls">
+
+    <!-- Contenedor visual -->
+    <div class="multi-pills"
+         data-for="field-{{ field.field_name }}"
+         aria-label="{{ h.scheming_language_text(field.label, h.lang()) }}">
+    </div>
+
+    <!-- Select real (usado por CKAN para enviar los datos) -->
+    <select id="field-{{ field.field_name }}"
+            name="{{ field.field_name }}"
+            class="form-control js-multi-native"
+            multiple
+            size="{{ field.get('size', 10) }}">
+
+      {%- for c in field.choices -%}
+        {%- if c is mapping -%}
+          {%- set v = c.value -%}
+          {%- set l = c.label -%}
+        {%- else -%}
+          {%- set v = c[0] -%}
+          {%- set l = c[1] -%}
+        {%- endif -%}
+
+        <option value="{{ v }}" {% if v in selected %}selected{% endif %}>
+          {{ l }}
+        </option>
+
+      {%- endfor -%}
+
+    </select>
+
+    {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+
+  </div>
+</div>  
